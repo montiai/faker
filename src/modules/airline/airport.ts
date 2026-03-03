@@ -2,6 +2,17 @@ import type { FakerCore } from '../../faker-core';
 import { assertLocaleData } from '../../internal/locale-proxy';
 import { arrayElement } from '../helpers/array-element';
 
+export interface Airport {
+  /**
+   * The name of the airport (e.g. `'Dallas Fort Worth International Airport'`).
+   */
+  readonly name: string;
+  /**
+   * The IATA code of the airport (e.g. `'DFW'`).
+   */
+  readonly iataCode: string;
+}
+
 /**
  * Generates a random airport.
  *
