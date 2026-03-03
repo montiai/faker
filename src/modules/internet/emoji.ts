@@ -1,0 +1,41 @@
+import type { FakerCore } from '../../faker-core';
+import { assertLocaleData } from '../../internal/locale-proxy';
+import { arrayElement } from '../helpers/array-element';
+
+/**
+ * Generates a random emoji.
+ *
+ * @param fakerCore The FakerCore to use.
+ * @param options Options object.
+ * @param options.types A list of the emoji types that should be included. Possible values are `'smiley'`, `'body'`, `'person'`, `'nature'`, `'food'`, `'travel'`, `'activity'`, `'object'`, `'symbol'`, `'flag'`. By default, emojis from any type will be included.
+ *
+ * @example
+ * emoji(fakerCore) // '🥰'
+ * emoji(fakerCore, { types: ['food', 'nature'] }) // '🥐'
+ *
+ * @since 6.2.0
+ */
+export function emoji(
+  fakerCore: FakerCore,
+  options: {
+    /**
+     * A list of the emoji types that should be used.
+     *
+     * @default Object.keys(faker.definitions.internet.emoji)
+     */
+    types?: ReadonlyArray<EmojiType>;
+  } = {}
+): string {
+  const {
+    types = Object.keys(
+      assertLocaleData(fakerCore.definitions.internet?.emoji, 'internet.emoji')
+    ) as EmojiType[],
+  } = options;
+  const emojiType = arrayElement(fakerCore, types);
+  return arrayElement(
+    fakerCore,
+    assertLocaleData(fakerCore.definitions.internet?.emoji, 'internet.emoji')[
+      emojiType
+    ]
+  );
+}

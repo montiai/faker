@@ -1,0 +1,25 @@
+import type { FakerCore } from '../../faker-core';
+import { assertLocaleData } from '../../internal/locale-proxy';
+import { arrayElement } from '../helpers/array-element';
+
+/**
+ * Returns a random IANA time zone name.
+ *
+ * The returned time zone is not tied to the current locale.
+ *
+ * @param fakerCore The FakerCore to use.
+ *
+ * @see [IANA Time Zone Database](https://www.iana.org/time-zones)
+ * @see locationTimeZone(fakerCore): For generating a timezone based on the current locale.
+ *
+ * @example
+ * locationTimeZone(fakerCore) // 'Pacific/Guam'
+ *
+ * @since 9.0.0
+ */
+export function timeZone(fakerCore: FakerCore): string {
+  return arrayElement(
+    fakerCore,
+    assertLocaleData(fakerCore.definitions.date?.time_zone, 'date.time_zone')
+  );
+}
