@@ -63,7 +63,7 @@ export function createLocaleProxy(locale: LocaleDefinition): LocaleProxy {
 export function assertLocaleData<T>(
   value: T,
   ...path: string[]
-): asserts value is NonNullable<T> {
+): NonNullable<T> {
   if (value === null) {
     throw new FakerError(
       `The locale data for '${path.join('.')}' aren't applicable to this locale.
@@ -77,6 +77,8 @@ export function assertLocaleData<T>(
   For more information see https://fakerjs.dev/guide/localization.html`
     );
   }
+
+  return value;
 }
 
 /**
