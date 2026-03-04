@@ -1,10 +1,78 @@
 import { FakerError } from '../../errors/faker-error';
 import type { FakerCore } from '../../faker-core';
+import { boolean } from '../datatype/boolean';
 import { arrayElement } from '../helpers/array-element';
 import { multiple } from '../helpers/multiple';
 import { int } from '../number/int';
 import { alphanumeric } from '../string/alphanumeric';
 import { fromCharacters } from '../string/from-characters';
+
+/**
+ * Returns a number based on given RegEx-based quantifier symbol or quantifier values.
+ *
+ * @param fakerCore The FakerCore to use.
+ * @param quantifierSymbol Quantifier symbols can be either of these: `?`, `*`, `+`.
+ * @param quantifierMin Quantifier minimum value. If given without a maximum, this will be used as the quantifier value.
+ * @param quantifierMax Quantifier maximum value. Will randomly get a value between the minimum and maximum if both are provided.
+ *
+ * @returns a random number based on the given quantifier parameters.
+ *
+ * @example
+ * getRepetitionsBasedOnQuantifierParameters(fakerCore, '*', null, null) // 3
+ * getRepetitionsBasedOnQuantifierParameters(fakerCore, null, 10, null) // 10
+ * getRepetitionsBasedOnQuantifierParameters(fakerCore, null, 5, 8) // 6
+ *
+ * @since 8.0.0
+ */
+function getRepetitionsBasedOnQuantifierParameters(
+  fakerCore: FakerCore,
+  quantifierSymbol: string,
+  quantifierMin: string,
+  quantifierMax: string
+): number {
+  let repetitions = 1;
+  if (quantifierSymbol) {
+    switch (quantifierSymbol) {
+      case '?': {
+        repetitions = boolean(fakerCore) ? 0 : 1;
+        break;
+      }
+
+      case '*': {
+        let limit = 1;
+        while (boolean(fakerCore)) {
+          limit *= 2;
+        }
+
+        repetitions = int(fakerCore, { min: 0, max: limit });
+        break;
+      }
+
+      case '+': {
+        let limit = 1;
+        while (boolean(fakerCore)) {
+          limit *= 2;
+        }
+
+        repetitions = int(fakerCore, { min: 1, max: limit });
+        break;
+      }
+
+      default: {
+        throw new FakerError('Unknown quantifier symbol provided.');
+      }
+    }
+  } else if (quantifierMin != null && quantifierMax != null) {
+    repetitions = int(fakerCore, {
+      min: Number.parseInt(quantifierMin),
+      max: Number.parseInt(quantifierMax),
+    });
+  } else if (quantifierMin != null && quantifierMax == null) {
+    repetitions = Number.parseInt(quantifierMin);
+  }
+
+  return repetitions;
+}
 
 /**
  * Generates a string matching the given regex like expressions.

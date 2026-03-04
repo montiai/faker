@@ -37,21 +37,30 @@ import { fakeEval } from './_eval';
  *
  * @param fakerCore The FakerCore to use.
  * @param pattern The pattern string that will get interpolated.
+ * @param entrypoints The entrypoints to resolve on.
+ * To use any of the faker methods, you have to pass the respective module/the module registry.
+ * Defaults to `[ fakerCore.definitions ]`.
  *
  * @see mustache(fakerCore): For using custom functions to resolve templates.
  *
  * @example
- * fake(fakerCore, '{{person.lastName}}') // 'Barrows'
- * fake(fakerCore, '{{person.lastName}}, {{person.firstName}} {{person.suffix}}') // 'Durgan, Noe MD'
+ * fake(fakerCore, '{{location.city_name}}') // 'Panda City'
+ * fake(fakerCore, 'From {{en.location.city_name}} to {{de.location.city_name}}', [{ en, de }]) // 'From London to Berlin'
+ * fake(fakerCore, '{{person.lastName}}', [moduleRegistry]) // 'Barrows'
+ * fake(fakerCore, '{{person.lastName}}, {{person.firstName}} {{person.suffix}}', [{ person: personModule }]) // 'Durgan, Noe MD'
  * fake(fakerCore, 'This is static test.') // 'This is static test.'
- * fake(fakerCore, 'Good Morning {{person.firstName}}!') // 'Good Morning Estelle!'
- * fake(fakerCore, 'You can visit me at {{location.streetAddress(true)}}.') // 'You can visit me at 3393 Ronny Way Apt. 742.'
- * fake(fakerCore, 'I flipped the coin and got: {{helpers.arrayElement(["heads", "tails"])}}') // 'I flipped the coin and got: tails'
- * fake(fakerCore, 'Your PIN number is: {{string.numeric(4, {"exclude": ["0"]})}}') // 'Your PIN number is: 4834'
+ * fake(fakerCore, 'Good Morning {{person.firstName}}!', [...]) // 'Good Morning Estelle!'
+ * fake(fakerCore, 'You can visit me at {{location.streetAddress(true)}}.', [...]) // 'You can visit me at 3393 Ronny Way Apt. 742.'
+ * fake(fakerCore, 'I flipped the coin and got: {{helpers.arrayElement(["heads", "tails"])}}', [...]) // 'I flipped the coin and got: tails'
+ * fake(fakerCore, 'Your PIN number is: {{string.numeric(4, {"exclude": ["0"]})}}', [...]) // 'Your PIN number is: 4834'
  *
  * @since 7.4.0
  */
-export function fake(fakerCore: FakerCore, pattern: string): string;
+export function fake(
+  fakerCore: FakerCore,
+  pattern: string,
+  entrypoints?: ReadonlyArray<unknown>
+): string;
 /**
  * Generator for combining faker methods based on an array containing static string inputs.
  *
@@ -77,30 +86,35 @@ export function fake(fakerCore: FakerCore, pattern: string): string;
  * const message = fake(fakerCore, [
  *   'You can call me at {{phone.number(+!# !## #### #####!)}}.',
  *   'My email is {{internet.email}}.',
- * ]);
+ * ], [moduleRegistry]);
  * ```
  *
  * It is also possible to use multiple parameters (comma separated).
  *
  * ```js
- * const message = fake(fakerCore, ['Your pin is {{string.numeric(4, {"allowLeadingZeros": true})}}.']);
+ * const message = fake(fakerCore, ['Your pin is {{string.numeric(4, {"allowLeadingZeros": true})}}.'], [...]);
  * ```
  *
  * It is also NOT possible to use any non-faker methods or plain javascript in such patterns.
  *
  * @param fakerCore The FakerCore to use.
  * @param patterns The array to select a pattern from, that will then get interpolated. Must not be empty.
+ * @param entrypoints The entrypoints to resolve on.
+ * To use any of the faker methods, you have to pass the respective module/the module registry.
+ * Defaults to `[ fakerCore.definitions ]`.
  *
  * @see mustache(fakerCore): For using custom functions to resolve templates.
  *
  * @example
- * fake(fakerCore, ['A: {{person.firstName}}', 'B: {{person.lastName}}']) // 'A: Barry'
+ * fake(fakerCore, ['{{location.city_name}}', '{{location.city_pattern}}']) // 'Panda City'
+ * fake(fakerCore, ['A: {{person.firstName}}', 'B: {{person.lastName}}'], [moduleRegistry]) // 'A: Barry'
  *
  * @since 8.0.0
  */
 export function fake(
   fakerCore: FakerCore,
-  patterns: ReadonlyArray<string>
+  patterns: ReadonlyArray<string>,
+  entrypoints?: ReadonlyArray<unknown>
 ): string;
 /**
  * Generator for combining faker methods based on a static string input or an array of static string inputs.
@@ -137,28 +151,34 @@ export function fake(
  *
  * @param fakerCore The FakerCore to use.
  * @param pattern The pattern string that will get interpolated. If an array is passed, a random element will be picked and interpolated.
+ * @param entrypoints The entrypoints to resolve on.
+ * To use any of the faker methods, you have to pass the respective module/the module registry.
+ * Defaults to `[ fakerCore.definitions ]`.
  *
  * @see mustache(fakerCore): For using custom functions to resolve templates.
  *
  * @example
- * fake(fakerCore, '{{person.lastName}}') // 'Barrows'
- * fake(fakerCore, '{{person.lastName}}, {{person.firstName}} {{person.suffix}}') // 'Durgan, Noe MD'
+ * fake(fakerCore, '{{location.city_name}}') // 'Panda City'
+ * fake(fakerCore, 'From {{en.location.city_name}} to {{de.location.city_name}}', [{ en, de }]) // 'From London to Berlin'
+ * fake(fakerCore, '{{person.lastName}}', [moduleRegistry]) // 'Barrows'
+ * fake(fakerCore, '{{person.lastName}}, {{person.firstName}} {{person.suffix}}', [{ person: personModule }]) // 'Durgan, Noe MD'
  * fake(fakerCore, 'This is static test.') // 'This is static test.'
- * fake(fakerCore, 'Good Morning {{person.firstName}}!') // 'Good Morning Estelle!'
- * fake(fakerCore, 'You can visit me at {{location.streetAddress(true)}}.') // 'You can visit me at 3393 Ronny Way Apt. 742.'
- * fake(fakerCore, 'I flipped the coin and got: {{helpers.arrayElement(["heads", "tails"])}}') // 'I flipped the coin and got: tails'
- * fake(fakerCore, ['A: {{person.firstName}}', 'B: {{person.lastName}}']) // 'A: Barry'
+ * fake(fakerCore, 'Good Morning {{person.firstName}}!', [...]) // 'Good Morning Estelle!'
+ * fake(fakerCore, 'You can visit me at {{location.streetAddress(true)}}.', [...]) // 'You can visit me at 3393 Ronny Way Apt. 742.'
+ * fake(fakerCore, 'I flipped the coin and got: {{helpers.arrayElement(["heads", "tails"])}}', [...]) // 'I flipped the coin and got: tails'
+ * fake(fakerCore, ['A: {{person.firstName}}', 'B: {{person.lastName}}'], [...]) // 'A: Barry'
  *
  * @since 7.4.0
  */
 export function fake(
   fakerCore: FakerCore,
-  pattern: string | ReadonlyArray<string>
+  pattern: string | ReadonlyArray<string>,
+  entrypoints?: ReadonlyArray<unknown>
 ): string;
-
 export function fake(
   fakerCore: FakerCore,
-  pattern: string | ReadonlyArray<string>
+  pattern: string | ReadonlyArray<string>,
+  entrypoints: ReadonlyArray<unknown> = [fakerCore.definitions]
 ): string {
   pattern =
     typeof pattern === 'string' ? pattern : arrayElement(fakerCore, pattern);
@@ -177,7 +197,7 @@ export function fake(
   const token = pattern.substring(start + 2, end + 2);
   const method = token.replace('}}', '').replace('{{', '');
 
-  const result = fakeEval(method, fakerCore);
+  const result = fakeEval(fakerCore, method, entrypoints);
   const stringified = String(result);
 
   // Replace the found tag with the returned fake value
@@ -186,5 +206,5 @@ export function fake(
     pattern.substring(0, start) + stringified + pattern.substring(end + 2);
 
   // return the response recursively until we are done finding all tags
-  return fake(fakerCore, patched);
+  return fake(fakerCore, patched, entrypoints);
 }

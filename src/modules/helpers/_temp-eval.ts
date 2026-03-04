@@ -1,6 +1,5 @@
 import { FakerError } from '../../errors/faker-error';
-import type { FakerCore } from '../../faker-core';
-import { arrayElement } from './array-element';
+import type { Faker } from '../../faker';
 
 const REGEX_DOT_OR_BRACKET = /\.|\(/;
 
@@ -13,63 +12,61 @@ const REGEX_DOT_OR_BRACKET = /\.|\(/;
  * It tries to resolve the expression on the given/default entrypoints:
  *
  * ```js
- * const firstName = fakeEval(fakerCore, 'person.firstName', [moduleRegistry]);
- * const firstName2 = fakeEval(fakerCore, 'person.first_name');
+ * const firstName = fakeEval('person.firstName', faker);
+ * const firstName2 = fakeEval('person.first_name', faker);
  * ```
  *
  * Is equivalent to:
  *
  * ```js
- * const firstName = firstName(fakerCore);
- * const firstName2 = arrayElement(fakerCore, fakerCore.definitions.person.first_name);
+ * const firstName = faker.person.firstName();
+ * const firstName2 = faker.helpers.arrayElement(faker.rawDefinitions.person.first_name);
  * ```
  *
  * You can provide parameters as well. At first, they will be parsed as json,
  * and if that isn't possible, it will fall back to string:
  *
  * ```js
- * const message = fakeEval(fakerCore, 'phone.number(+!# !## #### #####!)', [moduleRegistry]);
+ * const message = fakeEval('phone.number(+!# !## #### #####!)', faker);
  * ```
  *
  * It is also possible to use multiple parameters (comma separated).
  *
  * ```js
- * const pin = fakeEval(fakerCore, 'string.numeric(4, {"allowLeadingZeros": true})');
+ * const pin = fakeEval('string.numeric(4, {"allowLeadingZeros": true})', faker);
  * ```
  *
  * This method can resolve expressions with varying depths (dot separated parts).
  *
  * ```ts
- * const airlineModule = fakeEval(fakerCore, 'airline'); // AirlineModule
- * const airlineObject = fakeEval(fakerCore, 'airline.airline'); // { name: 'Etihad Airways', iataCode: 'EY' }
- * const airlineCode = fakeEval(fakerCore, 'airline.airline.iataCode'); // 'EY'
- * const airlineName = fakeEval(fakerCore, 'airline.airline().name'); // 'Etihad Airways'
- * const airlineMethodName = fakeEval(fakerCore, 'airline.airline.name'); // 'bound airline'
+ * const airlineModule = fakeEval('airline', faker); // AirlineModule
+ * const airlineObject = fakeEval('airline.airline', faker); // { name: 'Etihad Airways', iataCode: 'EY' }
+ * const airlineCode = fakeEval('airline.airline.iataCode', faker); // 'EY'
+ * const airlineName = fakeEval('airline.airline().name', faker); // 'Etihad Airways'
+ * const airlineMethodName = fakeEval('airline.airline.name', faker); // 'bound airline'
  * ```
  *
  * It is NOT possible to access any values not passed as entrypoints.
  *
  * This method will never return arrays, as it will pick a random element from them instead.
  *
- * @param fakerCore The FakerCore to use.
  * @param expression The expression to evaluate on the entrypoints.
+ * @param faker The faker instance to resolve array elements.
  * @param entrypoints The entrypoints to use when evaluating the expression.
- * Defaults to the locale definitions of the given fakerCore, but can be set to any array of objects/functions.
  *
- * @see fake() If you wish to have a string with multiple expressions.
+ * @see faker.helpers.fake() If you wish to have a string with multiple expressions.
  *
  * @example
- * fakeEval(fakerCore, 'location.city_name'); // 'Panda City'
- * fakeEval(fakerCore, 'person.lastName', [moduleRegistry]); // 'Barrows'
- * fakeEval(fakerCore, 'helpers.arrayElement(["heads", "tails"])', [ { helpers: helpersModule }]); // 'tails'
- * fakeEval(fakerCore, 'number.int(9999)', [{ number: numberModule }]); // 4834
+ * fakeEval('person.lastName', faker) // 'Barrows'
+ * fakeEval('helpers.arrayElement(["heads", "tails"])', faker) // 'tails'
+ * fakeEval('number.int(9999)', faker) // 4834
  *
  * @since 8.4.0
  */
 export function fakeEval(
-  fakerCore: FakerCore,
   expression: string,
-  entrypoints: ReadonlyArray<unknown> = [fakerCore.definitions]
+  faker: Faker,
+  entrypoints: ReadonlyArray<unknown> = [faker, faker.rawDefinitions]
 ): unknown {
   if (expression.length === 0) {
     throw new FakerError('Eval expression cannot be empty.');
@@ -84,9 +81,9 @@ export function fakeEval(
   do {
     let index: number;
     if (remaining.startsWith('(')) {
-      [index, current] = evalProcessFunction(fakerCore, remaining, current);
+      [index, current] = evalProcessFunction(remaining, current);
     } else {
-      [index, current] = evalProcessExpression(fakerCore, remaining, current);
+      [index, current] = evalProcessExpression(remaining, current);
     }
 
     remaining = remaining.substring(index);
@@ -95,7 +92,7 @@ export function fakeEval(
     current = current
       .filter((value) => value != null)
       .map((value): unknown =>
-        Array.isArray(value) ? arrayElement(fakerCore, value) : value
+        Array.isArray(value) ? faker.helpers.arrayElement(value) : value
       );
   } while (remaining.length > 0 && current.length > 0);
 
@@ -104,18 +101,16 @@ export function fakeEval(
   }
 
   const value = current[0];
-  return typeof value === 'function' ? value(fakerCore) : value;
+  return typeof value === 'function' ? value() : value;
 }
 
 /**
  * Evaluates a function call and returns the new read index and the mapped results.
  *
- * @param fakerCore The FakerCore to use.
  * @param input The input string to parse.
  * @param entrypoints The entrypoints to attempt the call on.
  */
 function evalProcessFunction(
-  fakerCore: FakerCore,
   input: string,
   entrypoints: ReadonlyArray<unknown>
 ): [continueIndex: number, mapped: unknown[]] {
@@ -138,9 +133,7 @@ function evalProcessFunction(
   return [
     index + (nextChar === '.' ? 2 : 1), // one for the closing bracket, one for the dot
     entrypoints.map((entrypoint): unknown =>
-      typeof entrypoint === 'function'
-        ? entrypoint(fakerCore, ...params)
-        : undefined
+      typeof entrypoint === 'function' ? entrypoint(...params) : undefined
     ),
   ];
 }
@@ -183,12 +176,10 @@ function findParams(input: string): [continueIndex: number, params: unknown[]] {
 /**
  * Processes one expression part and returns the new read index and the mapped results.
  *
- * @param fakerCore The FakerCore to use.
  * @param input The input string to parse.
  * @param entrypoints The entrypoints to resolve on.
  */
 function evalProcessExpression(
-  fakerCore: FakerCore,
   input: string,
   entrypoints: ReadonlyArray<unknown>
 ): [continueIndex: number, mapped: unknown[]] {
@@ -207,28 +198,21 @@ function evalProcessExpression(
 
   return [
     index + (dotMatch ? 1 : 0),
-    entrypoints.map((entrypoint) =>
-      resolveProperty(fakerCore, entrypoint, key)
-    ),
+    entrypoints.map((entrypoint) => resolveProperty(entrypoint, key)),
   ];
 }
 
 /**
  * Resolves the given property on the given entrypoint.
  *
- * @param fakerCore The FakerCore to use.
  * @param entrypoint The entrypoint to resolve the property on.
  * @param key The property name to resolve.
  */
-function resolveProperty(
-  fakerCore: FakerCore,
-  entrypoint: unknown,
-  key: string
-): unknown {
+function resolveProperty(entrypoint: unknown, key: string): unknown {
   switch (typeof entrypoint) {
     case 'function': {
       try {
-        entrypoint = entrypoint(fakerCore);
+        entrypoint = entrypoint();
       } catch {
         return undefined;
       }

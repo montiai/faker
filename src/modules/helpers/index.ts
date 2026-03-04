@@ -1,9 +1,10 @@
 import type { Faker, SimpleFaker } from '../..';
 import { FakerError } from '../../errors/faker-error';
 import { SimpleModuleBase } from '../../internal/module-base';
-import { fakeEval } from './_eval';
 import { luhnCheckValue } from './_luhn-check';
+import { fakeEval } from './_temp-eval';
 
+// Duplicate since it used a faker internally
 /**
  * Returns a number based on given RegEx-based quantifier symbol or quantifier values.
  *
@@ -71,6 +72,7 @@ function getRepetitionsBasedOnQuantifierParameters(
   return repetitions;
 }
 
+// Duplicate since it used a faker internally
 /**
  * Replaces the regex like expressions in the given string with matching values.
  *
@@ -159,6 +161,7 @@ function legacyRegexpStringParse(
   return string;
 }
 
+// Duplicate since it used a faker internally
 /**
  * Parses the given string symbol by symbol and replaces the placeholders with digits (`0` - `9`).
  * `!` will be replaced by digits >=2 (`2` - `9`).
