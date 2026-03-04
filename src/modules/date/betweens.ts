@@ -1,4 +1,3 @@
-import { FakerError } from '../../errors/faker-error';
 import type { FakerCore } from '../../faker-core';
 import { between } from '../date/between';
 import { multiple } from '../helpers/multiple';

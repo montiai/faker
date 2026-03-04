@@ -56,6 +56,8 @@ export function weekday(
   }
 
   const values = source[type];
-  assertLocaleData(values, 'date.weekday', type);
-  return arrayElement(fakerCore, values);
+  return arrayElement(
+    fakerCore,
+    assertLocaleData(values, 'date.weekday', type)
+  );
 }

@@ -56,6 +56,5 @@ export function month(
   }
 
   const values = source[type];
-  assertLocaleData(values, 'date.month', type);
-  return arrayElement(fakerCore, values);
+  return arrayElement(fakerCore, assertLocaleData(values, 'date.month', type));
 }
