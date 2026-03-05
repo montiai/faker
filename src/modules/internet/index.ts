@@ -5,7 +5,8 @@ import { ModuleBase } from '../../internal/module-base';
 import { charMapping } from './_char-mappings';
 import type { EmojiType } from './emoji';
 import type { HTTPStatusCodeType } from './http-status-code';
-import { ipv4Networks, type IPv4NetworkType } from './ipv4';
+import type { IPv4NetworkType } from './ipv4';
+import { ipv4Networks } from './ipv4';
 import type { HTTPProtocolType } from './url';
 
 export type { EmojiType } from './emoji';
