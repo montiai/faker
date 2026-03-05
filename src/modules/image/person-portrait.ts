@@ -26,7 +26,7 @@ export function personPortrait(
      * The sex of the person for the avatar.
      * Can be `'female'` or `'male'`. `'generic'` uses a random selection.
      *
-     * @default faker.person.sexType()
+     * @default sexType(fakerCore)
      */
     sex?: SexType;
     /**

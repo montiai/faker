@@ -6,9 +6,9 @@ import { alphanumeric } from '../string/alphanumeric';
 /**
  * Generates a random image url provided via https://picsum.photos.
  *
- * @param fakerCore The FakerCore to use.
  * @remark This method generates a random string representing an URL from picsum.photos. Faker is not responsible for the content of the image or the service providing it.
  *
+ * @param fakerCore The FakerCore to use.
  * @param options Options for generating a URL for an image.
  * @param options.width The width of the image. Defaults to a random integer between `1` and `3999`.
  * @param options.height The height of the image. Defaults to a random integer between `1` and `3999`.
@@ -31,25 +31,25 @@ export function urlPicsumPhotos(
     /**
      * The width of the image.
      *
-     * @default faker.number.int({ min: 1, max: 3999 })
+     * @default int(fakerCore, { min: 1, max: 3999 })
      */
     width?: number;
     /**
      * The height of the image.
      *
-     * @default faker.number.int({ min: 1, max: 3999 })
+     * @default int(fakerCore, { min: 1, max: 3999 })
      */
     height?: number;
     /**
      * Whether the image should be grayscale.
      *
-     * @default faker.datatype.boolean()
+     * @default boolean(fakerCore)
      */
     grayscale?: boolean;
     /**
      * Whether the image should be blurred. `0` disables the blur.
      *
-     * @default faker.number.int({ max: 10 })
+     * @default int(fakerCore, { max: 10 })
      */
     blur?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
   } = {}

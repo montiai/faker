@@ -26,26 +26,26 @@ export function dataUri(
     /**
      * The width of the image.
      *
-     * @default faker.number.int({ min: 1, max: 3999 })
+     * @default int(fakerCore, { min: 1, max: 3999 })
      */
     width?: number;
     /**
      * The height of the image.
      *
-     * @default faker.number.int({ min: 1, max: 3999 })
+     * @default int(fakerCore, { min: 1, max: 3999 })
      */
     height?: number;
     /**
      * The color of the image. Must be a color supported by svg.
      *
-     * @default faker.color.rgb()
+     * @default rgb(fakerCore)
      */
     color?: string;
     /**
      * The type of the image to return. Consisting of
      * the file extension and the used encoding.
      *
-     * @default faker.helpers.arrayElement(['svg-uri', 'svg-base64'])
+     * @default arrayElement(fakerCore, ['svg-uri', 'svg-base64'])
      */
     type?: 'svg-uri' | 'svg-base64';
   } = {}
