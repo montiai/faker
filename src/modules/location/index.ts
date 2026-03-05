@@ -1,26 +1,9 @@
 import type { Faker } from '../..';
 import { FakerError } from '../../errors/faker-error';
 import { SimpleModuleBase } from '../../internal/module-base';
+import type { Language } from './language';
 
-/**
- * Represents a language with its full name, 2 character ISO 639-1 code, and 3 character ISO 639-2 code.
- */
-export interface Language {
-  /**
-   * The full name for the language (e.g. `English`).
-   */
-  name: string;
-
-  /**
-   * The 2 character [ISO 639-1](https://en.wikipedia.org/wiki/ISO_639-1) code.
-   */
-  alpha2: string;
-
-  /**
-   * The 3 character [ISO 639-2](https://en.wikipedia.org/wiki/ISO_639-2) code.
-   */
-  alpha3: string;
-}
+export type { Language } from './language';
 
 /**
  * Module with location functions that don't require localized data
