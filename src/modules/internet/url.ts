@@ -2,6 +2,8 @@ import type { FakerCore } from '../../faker-core';
 import { boolean } from '../datatype/boolean';
 import { domainName } from '../internet/domain-name';
 
+export type HTTPProtocolType = 'http' | 'https';
+
 /**
  * Generates a random http(s) url.
  *

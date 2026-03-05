@@ -6,7 +6,7 @@ import { hex } from '../number/hex';
  *
  * @param fakerCore The FakerCore to use.
  * @param options An options object.
- * @param separator The optional separator to use. Can be either `':'`, `'-'` or `''`. Defaults to `':'`.
+ * @param options.separator The optional separator to use. Can be either `':'`, `'-'` or `''`. Defaults to `':'`.
  *
  * @example
  * mac(fakerCore) // '32:8e:2e:09:c6:05'
@@ -41,7 +41,7 @@ export function mac(fakerCore: FakerCore, separator?: string): string;
  *
  * @param fakerCore The FakerCore to use.
  * @param options The optional separator or an options object.
- * @param separator The optional separator to use. Can be either `':'`, `'-'` or `''`. Defaults to `':'`.
+ * @param options.separator The optional separator to use. Can be either `':'`, `'-'` or `''`. Defaults to `':'`.
  *
  * @example
  * mac(fakerCore) // '32:8e:2e:09:c6:05'
@@ -61,7 +61,6 @@ export function mac(
         separator?: string;
       }
 ): string;
-
 export function mac(
   fakerCore: FakerCore,
   options:
