@@ -83,9 +83,7 @@ export function int(
     throw new FakerError(`Max ${max} should be greater than min ${min}.`);
   }
 
-  // @ts-expect-error: access private member field
-  const randomizer = fakerCore._randomizer;
-  const real = randomizer.next();
+  const real = fakerCore.randomizer.next();
   const delta = effectiveMax - effectiveMin + 1; // +1 for inclusive max bounds and even distribution
   return Math.floor(real * delta + effectiveMin) * multipleOf;
 }

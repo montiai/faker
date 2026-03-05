@@ -1,4 +1,3 @@
-import { FakerError } from '../../errors/faker-error';
 import type { FakerCore } from '../../faker-core';
 import { int } from '../number/int';
 

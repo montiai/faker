@@ -111,8 +111,6 @@ export function float(
     return int / factor;
   }
 
-  // @ts-expect-error: access private member field
-  const randomizer = fakerCore._randomizer;
-  const real = randomizer.next();
+  const real = fakerCore.randomizer.next();
   return real * (max - min) + min;
 }
