@@ -2,6 +2,17 @@ import type { FakerCore } from '../../faker-core';
 import { assertLocaleData } from '../../internal/locale-proxy';
 import { arrayElement } from '../helpers/array-element';
 
+export interface Unit {
+  /**
+   * The long version of the unit (e.g. `meter`).
+   */
+  name: string;
+  /**
+   * The short version/abbreviation of the element (e.g. `Pa`).
+   */
+  symbol: string;
+}
+
 /**
  * Returns a random scientific unit.
  *
