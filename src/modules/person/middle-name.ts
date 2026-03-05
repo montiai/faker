@@ -1,6 +1,8 @@
 import type { FakerCore } from '../../faker-core';
 import { assertLocaleData } from '../../internal/locale-proxy';
 import { arrayElement } from '../helpers/array-element';
+import { selectDefinition } from './_select-definition';
+import type { SexType } from './sex-type';
 
 /**
  * Returns a random middle name.

@@ -1,29 +1,11 @@
 import type { Faker } from '../..';
 import type { PersonEntryDefinition } from '../../definitions/person';
 import { ModuleBase } from '../../internal/module-base';
+import type { SexType } from './sex-type';
+import { Sex } from './sex-type';
 
-/**
- * The enum for values corresponding to a person's sex.
- */
-export enum Sex {
-  /**
-   * Is used for values that are primarily attributable to only females.
-   */
-  Female = 'female',
-  /**
-   * Is used for values that cannot clearly be attributed to a specific sex or are used for both sexes.
-   */
-  Generic = 'generic',
-  /**
-   * Is used for values that are primarily attributable to only males.
-   */
-  Male = 'male',
-}
-
-/**
- * The parameter type for values corresponding to a person's sex.
- */
-export type SexType = `${Sex}`;
+export { Sex } from './sex-type';
+export type { SexType } from './sex-type';
 
 /**
  * Select a definition based on given sex.

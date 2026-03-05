@@ -1,4 +1,5 @@
 import type { FakerCore } from '../../faker-core';
+import { assertLocaleData } from '../../internal/locale-proxy';
 import { fake } from '../helpers/fake';
 
 /**
@@ -12,7 +13,10 @@ import { fake } from '../helpers/fake';
  * @since 8.0.0
  */
 export function bio(fakerCore: FakerCore): string {
-  const { bio_pattern } = fakerCore.definitions.person;
+  const bio_pattern = assertLocaleData(
+    fakerCore.definitions.person?.bio_pattern,
+    'person.bio_pattern'
+  );
 
   return fake(fakerCore, bio_pattern);
 }

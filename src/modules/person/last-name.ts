@@ -3,6 +3,8 @@ import { assertLocaleData } from '../../internal/locale-proxy';
 import { arrayElement } from '../helpers/array-element';
 import { fake } from '../helpers/fake';
 import { weightedArrayElement } from '../helpers/weighted-array-element';
+import { selectDefinition } from './_select-definition';
+import type { SexType } from './sex-type';
 
 /**
  * Returns a random last name.
@@ -19,13 +21,13 @@ import { weightedArrayElement } from '../helpers/weighted-array-element';
  * @since 8.0.0
  */
 export function lastName(fakerCore: FakerCore, sex?: SexType): string {
-  if (fakerCore.rawDefinitions.person?.last_name_pattern != null) {
+  if (fakerCore.definitions.person?.last_name_pattern != null) {
     const pattern = weightedArrayElement(
       fakerCore,
       selectDefinition(
         fakerCore,
         sex,
-        fakerCore.rawDefinitions.person.last_name_pattern
+        fakerCore.definitions.person.last_name_pattern
       )
     );
     return fake(fakerCore, pattern);

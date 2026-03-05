@@ -8,6 +8,8 @@ import { lastName as personLastName } from '../person/last-name';
 import { middleName } from '../person/middle-name';
 import { prefix } from '../person/prefix';
 import { suffix } from '../person/suffix';
+import type { SexType } from './sex-type';
+import { Sex } from './sex-type';
 
 /**
  * Generates a random full name.
@@ -33,19 +35,19 @@ export function fullName(
     /**
      * The optional first name to use. If not specified a random one will be chosen.
      *
-     * @default faker.person.firstName(sex)
+     * @default firstName(fakerCore, sex)
      */
     firstName?: string;
     /**
      * The optional last name to use. If not specified a random one will be chosen.
      *
-     * @default faker.person.lastName(sex)
+     * @default lastName(fakerCore, sex)
      */
     lastName?: string;
     /**
      * The optional sex to use. Can be either `'female'` or `'male'`.
      *
-     * @default faker.helpers.arrayElement(['female', 'male'])
+     * @default arrayElement(fakerCore, [Sex.Female, Sex.Male])
      */
     sex?: SexType;
   } = {}
