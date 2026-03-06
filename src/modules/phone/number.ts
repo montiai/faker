@@ -1,7 +1,7 @@
 import type { FakerCore } from '../../faker-core';
 import { assertLocaleData } from '../../internal/locale-proxy';
-import { legacyReplaceSymbolWithNumber } from '../helpers';
 import { arrayElement } from '../helpers/array-element';
+import { legacyReplaceSymbolWithNumber } from '../helpers/replace-credit-card-symbols';
 
 /**
  * Generates a random phone number.
