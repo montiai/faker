@@ -2,6 +2,8 @@ import type { FakerCore } from '../../faker-core';
 import type { LiteralUnion } from '../../internal/types';
 import { rangeToNumber } from '../helpers/range-to-number';
 import { fromCharacters } from '../string/from-characters';
+import type { AlphaChar, Casing } from './_types';
+import { LOWER_CHARS, UPPER_CHARS } from './_types';
 
 /**
  * Generating a string consisting of letters in the English alphabet.

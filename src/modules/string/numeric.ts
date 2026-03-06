@@ -4,6 +4,7 @@ import type { LiteralUnion } from '../../internal/types';
 import { arrayElement } from '../helpers/array-element';
 import { rangeToNumber } from '../helpers/range-to-number';
 import { fromCharacters } from '../string/from-characters';
+import { DIGIT_CHARS, type NumericChar } from './_types';
 
 /**
  * Generates a given length string of digits.
