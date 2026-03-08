@@ -24,6 +24,9 @@ afterAll(() => {
 });
 
 const modules = processComponents(getProject());
+const moduleByMethod = new Map(
+  modules.flatMap((m) => m.methods.map((method) => [method.name, m.camelTitle]))
+);
 
 function resolveDirToModule(moduleName: string): string {
   return resolve(tempDir, moduleName);
@@ -36,6 +39,13 @@ function resolvePathToMethodFile(
 ): string {
   const dir = resolveDirToModule(moduleName);
   return resolve(dir, `${methodName}_${signature}.ts`);
+}
+
+function toKebabCase(str: string): string {
+  return str
+    .replaceAll(/([a-z])([A-Z])/g, '$1-$2')
+    .replaceAll(/[\s_]+/g, '-')
+    .toLowerCase();
 }
 
 const allowedReferences = new Set(
@@ -94,6 +104,10 @@ describe('verify JSDoc tags', () => {
         });
       });
 
+      const thisModuleByMethod = new Map(
+        module.methods.map((method) => [method.name, moduleName])
+      );
+
       describe.each(module.methods.map((m) => [m.name, m]))(
         '%s',
         (methodName, method) => {
@@ -145,10 +159,41 @@ ${examples}`;
                   ];
 
                   if (imports.length > 0) {
-                    examples = `import { ${imports.join(
-                      ', '
-                    )} } from '${relativeImportPath}';\n\n${examples}`;
+                    examples = `// imports
+import { ${imports.join(', ')} } from '${relativeImportPath}';
+
+${examples}`;
                   }
+
+                  const functionImports = [
+                    ...new Set(examples.match(/\b(\w+)\(fakerCore/g)),
+                  ]
+                    .map((s) => s.replace('(fakerCore', ''))
+                    .map((functionName) => [
+                      functionName,
+                      (
+                        thisModuleByMethod.get(functionName) ??
+                        moduleByMethod.get(functionName) ??
+                        '..'
+                      )?.replace(
+                        'utils',
+                        moduleName === 'utils' ? '../utils' : 'utils'
+                      ),
+                    ]);
+
+                  if (examples.includes('fakerCore')) {
+                    examples = `// fakerCore
+import { base, en } from '${relativeImportPath}';
+import { createFakerCore } from '${relativeImportPath}/faker-core';
+const fakerCore = createFakerCore({ definitions: [en, base] });
+
+${examples.replace("import { fakerCore } from '../../../../../src';", '')}`;
+                  }
+
+                  examples = `// functionImports
+${functionImports.map(([functionName, moduleName]) => `import { ${functionName} } from '${relativeImportPath}/modules/${moduleName}/${toKebabCase(functionName)}';`).join('\n')}
+
+${examples}`;
                 }
 
                 writeFileSync(path, examples);
