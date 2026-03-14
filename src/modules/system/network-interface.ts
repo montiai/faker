@@ -7,6 +7,7 @@ import { numeric } from '../string/numeric';
 
 // Temp export
 export const commonInterfaceTypes = ['en', 'wl', 'ww'] as const;
+export type CommonInterfaceType = (typeof commonInterfaceTypes)[number];
 // Temp export
 export const commonInterfaceSchemas = {
   index: 'o',
@@ -14,6 +15,7 @@ export const commonInterfaceSchemas = {
   mac: 'x',
   pci: 'p',
 } as const;
+export type CommonInterfaceSchema = keyof typeof commonInterfaceSchemas;
 
 /**
  * Returns a random [network interface](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/networking_guide/sec-understanding_the_predictable_network_interface_device_names).
@@ -39,13 +41,13 @@ export function networkInterface(
      *
      * @default faker.helpers.arrayElement(['en', 'wl', 'ww'])
      */
-    interfaceType?: (typeof commonInterfaceTypes)[number];
+    interfaceType?: CommonInterfaceType;
     /**
      * The interface schema. Can be one of `index`, `slot`, `mac`, `pci`.
      *
      * @default faker.helpers.objectKey(['index' | 'slot' | 'mac' | 'pci'])
      */
-    interfaceSchema?: keyof typeof commonInterfaceSchemas;
+    interfaceSchema?: CommonInterfaceSchema;
   } = {}
 ): string {
   const {
