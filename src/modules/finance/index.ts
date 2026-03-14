@@ -10,6 +10,11 @@ import { ibanLib } from './_iban-lib';
 import type { Currency } from './currency';
 import { prettyPrintIban } from './iban';
 
+export { BitcoinAddressFamily, BitcoinNetwork } from './bitcoin-address';
+export type {
+  BitcoinAddressFamilyType,
+  BitcoinNetworkType,
+} from './bitcoin-address';
 export type { Currency } from './currency';
 
 /**
