@@ -1,205 +1,24 @@
-import type { Faker, SimpleFaker } from '../..';
-import { FakerError } from '../../errors/faker-error';
+import type { Faker } from '../../faker';
+import { fakerToCore } from '../../internal/faker-to-core';
 import { SimpleModuleBase } from '../../internal/module-base';
-import { luhnCheckValue } from './_luhn-check';
-import { fakeEval } from './_temp-eval';
-
-// Duplicate since it used a faker internally
-/**
- * Returns a number based on given RegEx-based quantifier symbol or quantifier values.
- *
- * @param faker The Faker instance to use.
- * @param quantifierSymbol Quantifier symbols can be either of these: `?`, `*`, `+`.
- * @param quantifierMin Quantifier minimum value. If given without a maximum, this will be used as the quantifier value.
- * @param quantifierMax Quantifier maximum value. Will randomly get a value between the minimum and maximum if both are provided.
- *
- * @returns a random number based on the given quantifier parameters.
- *
- * @example
- * getRepetitionsBasedOnQuantifierParameters(faker, '*', null, null) // 3
- * getRepetitionsBasedOnQuantifierParameters(faker, null, 10, null) // 10
- * getRepetitionsBasedOnQuantifierParameters(faker, null, 5, 8) // 6
- *
- * @since 8.0.0
- */
-function getRepetitionsBasedOnQuantifierParameters(
-  faker: SimpleFaker,
-  quantifierSymbol: string,
-  quantifierMin: string,
-  quantifierMax: string
-) {
-  let repetitions = 1;
-  if (quantifierSymbol) {
-    switch (quantifierSymbol) {
-      case '?': {
-        repetitions = faker.datatype.boolean() ? 0 : 1;
-        break;
-      }
-
-      case '*': {
-        let limit = 1;
-        while (faker.datatype.boolean()) {
-          limit *= 2;
-        }
-
-        repetitions = faker.number.int({ min: 0, max: limit });
-        break;
-      }
-
-      case '+': {
-        let limit = 1;
-        while (faker.datatype.boolean()) {
-          limit *= 2;
-        }
-
-        repetitions = faker.number.int({ min: 1, max: limit });
-        break;
-      }
-
-      default: {
-        throw new FakerError('Unknown quantifier symbol provided.');
-      }
-    }
-  } else if (quantifierMin != null && quantifierMax != null) {
-    repetitions = faker.number.int({
-      min: Number.parseInt(quantifierMin),
-      max: Number.parseInt(quantifierMax),
-    });
-  } else if (quantifierMin != null && quantifierMax == null) {
-    repetitions = Number.parseInt(quantifierMin);
-  }
-
-  return repetitions;
-}
-
-// Duplicate since it used a faker internally
-/**
- * Replaces the regex like expressions in the given string with matching values.
- *
- * Note: This method will be removed in v9.
- *
- * Supported patterns:
- * - `.{times}` => Repeat the character exactly `times` times.
- * - `.{min,max}` => Repeat the character `min` to `max` times.
- * - `[min-max]` => Generate a number between min and max (inclusive).
- *
- * @internal
- *
- * @param faker The Faker instance to use.
- * @param string The template string to parse.
- *
- * @example
- * legacyRegexpStringParse(faker) // ''
- * legacyRegexpStringParse(faker, '#{5}') // '#####'
- * legacyRegexpStringParse(faker, '#{2,9}') // '#######'
- * legacyRegexpStringParse(faker, '[500-15000]') // '8375'
- * legacyRegexpStringParse(faker, '#{3}test[1-5]') // '###test3'
- *
- * @since 5.0.0
- */
-function legacyRegexpStringParse(
-  faker: SimpleFaker,
-  string: string = ''
-): string {
-  // Deal with range repeat `{min,max}`
-  const RANGE_REP_REG = /(.)\{(\d+),(\d+)\}/;
-  const REP_REG = /(.)\{(\d+)\}/;
-  const RANGE_REG = /\[(\d+)-(\d+)\]/;
-  let min: number;
-  let max: number;
-  let tmp: number;
-  let repetitions: number;
-  let token = RANGE_REP_REG.exec(string);
-  while (token != null) {
-    min = Number.parseInt(token[2]);
-    max = Number.parseInt(token[3]);
-    // switch min and max
-    if (min > max) {
-      tmp = max;
-      max = min;
-      min = tmp;
-    }
-
-    repetitions = faker.number.int({ min, max });
-    string =
-      string.slice(0, token.index) +
-      token[1].repeat(repetitions) +
-      string.slice(token.index + token[0].length);
-    token = RANGE_REP_REG.exec(string);
-  }
-
-  // Deal with repeat `{num}`
-  token = REP_REG.exec(string);
-  while (token != null) {
-    repetitions = Number.parseInt(token[2]);
-    string =
-      string.slice(0, token.index) +
-      token[1].repeat(repetitions) +
-      string.slice(token.index + token[0].length);
-    token = REP_REG.exec(string);
-  }
-  // Deal with range `[min-max]` (only works with numbers for now)
-
-  token = RANGE_REG.exec(string);
-  while (token != null) {
-    min = Number.parseInt(token[1]); // This time we are not capturing the char before `[]`
-    max = Number.parseInt(token[2]);
-    // switch min and max
-    if (min > max) {
-      tmp = max;
-      max = min;
-      min = tmp;
-    }
-
-    string =
-      string.slice(0, token.index) +
-      faker.number.int({ min, max }).toString() +
-      string.slice(token.index + token[0].length);
-    token = RANGE_REG.exec(string);
-  }
-
-  return string;
-}
-
-// Duplicate since it used a faker internally
-/**
- * Parses the given string symbol by symbol and replaces the placeholders with digits (`0` - `9`).
- * `!` will be replaced by digits >=2 (`2` - `9`).
- *
- * Note: This method will be removed in v9.
- *
- * @internal
- *
- * @param faker The Faker instance to use.
- * @param string The template string to parse. Defaults to `''`.
- * @param symbol The symbol to replace with digits. Defaults to `'#'`.
- *
- * @example
- * legacyReplaceSymbolWithNumber(faker) // ''
- * legacyReplaceSymbolWithNumber(faker, '#####') // '04812'
- * legacyReplaceSymbolWithNumber(faker, '!####') // '27378'
- * legacyReplaceSymbolWithNumber(faker, 'Your pin is: !####') // '29841'
- *
- * @since 8.4.0
- */
-export function legacyReplaceSymbolWithNumber(
-  faker: SimpleFaker,
-  string: string = '',
-  symbol: string = '#'
-): string {
-  let result = '';
-  for (let i = 0; i < string.length; i++) {
-    if (string.charAt(i) === symbol) {
-      result += faker.number.int(9);
-    } else if (string.charAt(i) === '!') {
-      result += faker.number.int({ min: 2, max: 9 });
-    } else {
-      result += string.charAt(i);
-    }
-  }
-
-  return result;
-}
+import { arrayElement as helpersArrayElement } from './array-element';
+import { arrayElements as helpersArrayElements } from './array-elements';
+import { enumValue as helpersEnumValue } from './enum-value';
+import { fake as helpersFake } from './fake';
+import { fromRegExp as helpersFromRegExp } from './from-reg-exp';
+import { maybe as helpersMaybe } from './maybe';
+import { multiple as helpersMultiple } from './multiple';
+import { mustache as helpersMustache } from './mustache';
+import { objectEntry as helpersObjectEntry } from './object-entry';
+import { objectKey as helpersObjectKey } from './object-key';
+import { objectValue as helpersObjectValue } from './object-value';
+import { rangeToNumber as helpersRangeToNumber } from './range-to-number';
+import { replaceCreditCardSymbols as helpersReplaceCreditCardSymbols } from './replace-credit-card-symbols';
+import { replaceSymbols as helpersReplaceSymbols } from './replace-symbols';
+import { shuffle as helpersShuffle } from './shuffle';
+import { slugify as helpersSlugify } from './slugify';
+import { uniqueArray as helpersUniqueArray } from './unique-array';
+import { weightedArrayElement as helpersWeightedArrayElement } from './weighted-array-element';
 
 /**
  * Module with various helper methods providing basic (seed-dependent) operations useful for implementing faker methods (without methods requiring localized data).
@@ -219,11 +38,7 @@ export class SimpleHelpersModule extends SimpleModuleBase {
    * @since 2.0.1
    */
   slugify(string: string = ''): string {
-    return string
-      .normalize('NFKD') //for example è decomposes to as e +  ̀
-      .replaceAll(/[\u0300-\u036F]/g, '') // removes combining marks
-      .replaceAll(' ', '-') // replaces spaces with hyphens
-      .replaceAll(/[^\w.-]+/g, ''); // removes all non-word characters except for dots and hyphens
+    return helpersSlugify(fakerToCore(this.faker), string);
   }
 
   /**
@@ -245,51 +60,7 @@ export class SimpleHelpersModule extends SimpleModuleBase {
    * @since 3.0.0
    */
   replaceSymbols(string: string = ''): string {
-    const alpha = [
-      'A',
-      'B',
-      'C',
-      'D',
-      'E',
-      'F',
-      'G',
-      'H',
-      'I',
-      'J',
-      'K',
-      'L',
-      'M',
-      'N',
-      'O',
-      'P',
-      'Q',
-      'R',
-      'S',
-      'T',
-      'U',
-      'V',
-      'W',
-      'X',
-      'Y',
-      'Z',
-    ];
-    let result = '';
-
-    for (let i = 0; i < string.length; i++) {
-      if (string.charAt(i) === '#') {
-        result += this.faker.number.int(9);
-      } else if (string.charAt(i) === '?') {
-        result += this.arrayElement(alpha);
-      } else if (string.charAt(i) === '*') {
-        result += this.faker.datatype.boolean()
-          ? this.arrayElement(alpha)
-          : this.faker.number.int(9);
-      } else {
-        result += string.charAt(i);
-      }
-    }
-
-    return result;
+    return helpersReplaceSymbols(fakerToCore(this.faker), string);
   }
 
   /**
@@ -311,13 +82,11 @@ export class SimpleHelpersModule extends SimpleModuleBase {
     string: string = '6453-####-####-####-###L',
     symbol: string = '#'
   ): string {
-    // default values required for calling method without arguments
-
-    string = legacyRegexpStringParse(this.faker, string); // replace [4-9] with a random number in range etc...
-    string = legacyReplaceSymbolWithNumber(this.faker, string, symbol); // replace ### with random numbers
-
-    const checkNum = luhnCheckValue(string);
-    return string.replace('L', String(checkNum));
+    return helpersReplaceCreditCardSymbols(
+      fakerToCore(this.faker),
+      string,
+      symbol
+    );
   }
 
   /**
@@ -369,205 +138,7 @@ export class SimpleHelpersModule extends SimpleModuleBase {
    * @since 8.0.0
    */
   fromRegExp(pattern: string | RegExp): string {
-    let isCaseInsensitive = false;
-
-    if (pattern instanceof RegExp) {
-      isCaseInsensitive = pattern.flags.includes('i');
-      pattern = pattern.toString();
-      pattern = /\/(.+?)\//.exec(pattern)?.[1] ?? ''; // Remove frontslash from front and back of RegExp
-    }
-
-    let min: number;
-    let max: number;
-    let repetitions: number;
-
-    // Deal with single wildcards
-    const SINGLE_CHAR_REG =
-      /([.A-Za-z0-9])(?:\{(\d+)(?:,(\d+)|)\}|(\?|\*|\+))(?![^[]*]|[^{]*})/;
-    let token = SINGLE_CHAR_REG.exec(pattern);
-    while (token != null) {
-      const quantifierMin: string = token[2];
-      const quantifierMax: string = token[3];
-      const quantifierSymbol: string = token[4];
-
-      repetitions = getRepetitionsBasedOnQuantifierParameters(
-        this.faker,
-        quantifierSymbol,
-        quantifierMin,
-        quantifierMax
-      );
-
-      let replacement: string;
-      if (token[1] === '.') {
-        replacement = this.faker.string.alphanumeric(repetitions);
-      } else if (isCaseInsensitive) {
-        replacement = this.faker.string.fromCharacters(
-          [token[1].toLowerCase(), token[1].toUpperCase()],
-          repetitions
-        );
-      } else {
-        replacement = token[1].repeat(repetitions);
-      }
-
-      pattern =
-        pattern.slice(0, token.index) +
-        replacement +
-        pattern.slice(token.index + token[0].length);
-      token = SINGLE_CHAR_REG.exec(pattern);
-    }
-
-    const SINGLE_RANGE_REG = /(\d-\d|\w-\w|\d|\w|[-!@#$&()`.+,/"])/;
-    const RANGE_ALPHANUMEMRIC_REG =
-      /\[(\^|)(-|)(.+?)\](?:\{(\d+)(?:,(\d+)|)\}|(\?|\*|\+)|)/;
-    // Deal with character classes with quantifiers `[a-z0-9]{min[, max]}`
-    token = RANGE_ALPHANUMEMRIC_REG.exec(pattern);
-    while (token != null) {
-      const isNegated = token[1] === '^';
-      const includesDash: boolean = token[2] === '-';
-      const quantifierMin: string = token[4];
-      const quantifierMax: string = token[5];
-      const quantifierSymbol: string = token[6];
-
-      const rangeCodes: number[] = [];
-
-      let ranges = token[3];
-      let range = SINGLE_RANGE_REG.exec(ranges);
-
-      if (includesDash) {
-        // 45 is the ascii code for '-'
-        rangeCodes.push(45);
-      }
-
-      while (range != null) {
-        if (range[0].includes('-')) {
-          // handle ranges
-          const rangeMinMax = range[0]
-            .split('-')
-            .map((x) => x.codePointAt(0) ?? Number.NaN);
-          min = rangeMinMax[0];
-          max = rangeMinMax[1];
-          // throw error if min larger than max
-          if (min > max) {
-            throw new FakerError('Character range provided is out of order.');
-          }
-
-          for (let i = min; i <= max; i++) {
-            if (
-              isCaseInsensitive &&
-              Number.isNaN(Number(String.fromCodePoint(i)))
-            ) {
-              const ch = String.fromCodePoint(i);
-              rangeCodes.push(
-                ch.toUpperCase().codePointAt(0) ?? Number.NaN,
-                ch.toLowerCase().codePointAt(0) ?? Number.NaN
-              );
-            } else {
-              rangeCodes.push(i);
-            }
-          }
-        } else {
-          // handle non-ranges
-          if (isCaseInsensitive && Number.isNaN(Number(range[0]))) {
-            rangeCodes.push(
-              range[0].toUpperCase().codePointAt(0) ?? Number.NaN,
-              range[0].toLowerCase().codePointAt(0) ?? Number.NaN
-            );
-          } else {
-            rangeCodes.push(range[0].codePointAt(0) ?? Number.NaN);
-          }
-        }
-
-        ranges = ranges.substring(range[0].length);
-        range = SINGLE_RANGE_REG.exec(ranges);
-      }
-
-      repetitions = getRepetitionsBasedOnQuantifierParameters(
-        this.faker,
-        quantifierSymbol,
-        quantifierMin,
-        quantifierMax
-      );
-
-      if (isNegated) {
-        let index = -1;
-        // 0-9
-        for (let i = 48; i <= 57; i++) {
-          index = rangeCodes.indexOf(i);
-          if (index > -1) {
-            rangeCodes.splice(index, 1);
-            continue;
-          }
-
-          rangeCodes.push(i);
-        }
-
-        // A-Z
-        for (let i = 65; i <= 90; i++) {
-          index = rangeCodes.indexOf(i);
-          if (index > -1) {
-            rangeCodes.splice(index, 1);
-            continue;
-          }
-
-          rangeCodes.push(i);
-        }
-
-        // a-z
-        for (let i = 97; i <= 122; i++) {
-          index = rangeCodes.indexOf(i);
-          if (index > -1) {
-            rangeCodes.splice(index, 1);
-            continue;
-          }
-
-          rangeCodes.push(i);
-        }
-      }
-
-      const generatedString = this.multiple(
-        () => String.fromCodePoint(this.arrayElement(rangeCodes)),
-        { count: repetitions }
-      ).join('');
-
-      pattern =
-        pattern.slice(0, token.index) +
-        generatedString +
-        pattern.slice(token.index + token[0].length);
-      token = RANGE_ALPHANUMEMRIC_REG.exec(pattern);
-    }
-
-    const RANGE_REP_REG = /(.)\{(\d+),(\d+)\}/;
-    // Deal with quantifier ranges `{min,max}`
-    token = RANGE_REP_REG.exec(pattern);
-    while (token != null) {
-      min = Number.parseInt(token[2]);
-      max = Number.parseInt(token[3]);
-      // throw error if min larger than max
-      if (min > max) {
-        throw new FakerError('Numbers out of order in {} quantifier.');
-      }
-
-      repetitions = this.faker.number.int({ min, max });
-      pattern =
-        pattern.slice(0, token.index) +
-        token[1].repeat(repetitions) +
-        pattern.slice(token.index + token[0].length);
-      token = RANGE_REP_REG.exec(pattern);
-    }
-
-    const REP_REG = /(.)\{(\d+)\}/;
-    // Deal with repeat `{num}`
-    token = REP_REG.exec(pattern);
-    while (token != null) {
-      repetitions = Number.parseInt(token[2]);
-      pattern =
-        pattern.slice(0, token.index) +
-        token[1].repeat(repetitions) +
-        pattern.slice(token.index + token[0].length);
-      token = REP_REG.exec(pattern);
-    }
-
-    return pattern;
+    return helpersFromRegExp(fakerToCore(this.faker), pattern);
   }
 
   /**
@@ -649,18 +220,7 @@ export class SimpleHelpersModule extends SimpleModuleBase {
     }
   ): T[];
   shuffle<const T>(list: T[], options: { inplace?: boolean } = {}): T[] {
-    const { inplace = false } = options;
-
-    if (!inplace) {
-      list = [...list];
-    }
-
-    for (let i = list.length - 1; i > 0; --i) {
-      const j = this.faker.number.int(i);
-      [list[i], list[j]] = [list[j], list[i]];
-    }
-
-    return list;
+    return helpersShuffle(fakerToCore(this.faker), list, options);
   }
 
   /**
@@ -689,27 +249,7 @@ export class SimpleHelpersModule extends SimpleModuleBase {
     source: ReadonlyArray<T> | (() => T),
     length: number
   ): T[] {
-    if (Array.isArray(source)) {
-      const set = new Set<T>(source);
-      const array = [...set];
-      return this.shuffle(array).splice(0, length);
-    }
-
-    const set = new Set<T>();
-    try {
-      if (typeof source === 'function') {
-        const maxAttempts = 1000 * length;
-        let attempts = 0;
-        while (set.size < length && attempts < maxAttempts) {
-          set.add(source());
-          attempts++;
-        }
-      }
-    } catch {
-      // Ignore
-    }
-
-    return [...set];
+    return helpersUniqueArray(fakerToCore(this.faker), source, length);
   }
 
   /**
@@ -732,23 +272,7 @@ export class SimpleHelpersModule extends SimpleModuleBase {
     text: string | undefined,
     data: Record<string, string | Parameters<string['replace']>[1]>
   ): string {
-    if (text == null) {
-      return '';
-    }
-
-    for (const p in data) {
-      const re = new RegExp(`{{${p}}}`, 'g');
-      let value = data[p];
-      if (typeof value === 'string') {
-        // escape $, source: https://stackoverflow.com/a/6969486/6897682
-        value = value.replaceAll('$', '$$$$');
-        text = text.replace(re, value);
-      } else {
-        text = text.replace(re, value);
-      }
-    }
-
-    return text;
+    return helpersMustache(fakerToCore(this.faker), text, data);
   }
 
   /**
@@ -778,11 +302,7 @@ export class SimpleHelpersModule extends SimpleModuleBase {
       probability?: number;
     } = {}
   ): TResult | undefined {
-    if (this.faker.datatype.boolean(options)) {
-      return callback();
-    }
-
-    return undefined;
+    return helpersMaybe(fakerToCore(this.faker), callback, options);
   }
 
   /**
@@ -800,8 +320,7 @@ export class SimpleHelpersModule extends SimpleModuleBase {
    * @since 6.3.0
    */
   objectKey<const T extends Record<string, unknown>>(object: T): keyof T {
-    const array: Array<keyof T> = Object.keys(object);
-    return this.arrayElement(array);
+    return helpersObjectKey(fakerToCore(this.faker), object);
   }
 
   /**
@@ -819,8 +338,7 @@ export class SimpleHelpersModule extends SimpleModuleBase {
    * @since 6.3.0
    */
   objectValue<const T extends Record<string, unknown>>(object: T): T[keyof T] {
-    const key = this.faker.helpers.objectKey(object);
-    return object[key];
+    return helpersObjectValue(fakerToCore(this.faker), object);
   }
 
   /**
@@ -840,8 +358,7 @@ export class SimpleHelpersModule extends SimpleModuleBase {
   objectEntry<const T extends Record<string, unknown>>(
     object: T
   ): [keyof T, T[keyof T]] {
-    const key = this.faker.helpers.objectKey(object);
-    return [key, object[key]];
+    return helpersObjectEntry(fakerToCore(this.faker), object);
   }
 
   /**
@@ -859,14 +376,7 @@ export class SimpleHelpersModule extends SimpleModuleBase {
    * @since 6.3.0
    */
   arrayElement<const T>(array: ReadonlyArray<T>): T {
-    if (array.length === 0) {
-      throw new FakerError('Cannot get value from empty dataset.');
-    }
-
-    const index =
-      array.length > 1 ? this.faker.number.int({ max: array.length - 1 }) : 0;
-
-    return array[index];
+    return helpersArrayElement(fakerToCore(this.faker), array);
   }
 
   /**
@@ -900,34 +410,7 @@ export class SimpleHelpersModule extends SimpleModuleBase {
       value: T;
     }>
   ): T {
-    if (array.length === 0) {
-      throw new FakerError(
-        'weightedArrayElement expects an array with at least one element'
-      );
-    }
-
-    if (!array.every((elt) => elt.weight > 0)) {
-      throw new FakerError(
-        'weightedArrayElement expects an array of { weight, value } objects where weight is a positive number'
-      );
-    }
-
-    const total = array.reduce((sum, { weight }) => sum + weight, 0);
-    const random = this.faker.number.float({
-      min: 0,
-      max: total,
-    });
-    let current = 0;
-    for (const { weight, value } of array) {
-      current += weight;
-      if (random < current) {
-        return value;
-      }
-    }
-
-    // In case of rounding errors, return the last element
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return array.at(-1)!.value;
+    return helpersWeightedArrayElement(fakerToCore(this.faker), array);
   }
 
   /**
@@ -962,35 +445,7 @@ export class SimpleHelpersModule extends SimpleModuleBase {
           max: number;
         }
   ): T[] {
-    if (array.length === 0) {
-      return [];
-    }
-
-    const numElements = this.rangeToNumber(
-      count ?? { min: 1, max: array.length }
-    );
-
-    if (numElements >= array.length) {
-      return this.shuffle(array);
-    } else if (numElements <= 0) {
-      return [];
-    }
-
-    const arrayCopy = [...array];
-    let i = array.length;
-    const min = i - numElements;
-    let temp: T;
-    let index: number;
-
-    // Shuffle the last `count` elements of the array
-    while (i-- > min) {
-      index = this.faker.number.int(i);
-      temp = arrayCopy[index];
-      arrayCopy[index] = arrayCopy[i];
-      arrayCopy[i] = temp;
-    }
-
-    return arrayCopy.slice(min);
+    return helpersArrayElements(fakerToCore(this.faker), array, count);
   }
 
   /**
@@ -1014,16 +469,10 @@ export class SimpleHelpersModule extends SimpleModuleBase {
    *
    * @since 8.0.0
    */
-  // This does not use `const T` because enums shouldn't be created on the spot.
   enumValue<T extends Record<string | number, string | number>>(
     enumObject: T
   ): T[keyof T] {
-    // ignore numeric keys added by TypeScript
-    const keys: Array<keyof T> = Object.keys(enumObject).filter((key) =>
-      Number.isNaN(Number(key))
-    );
-    const randomKey = this.arrayElement(keys);
-    return enumObject[randomKey];
+    return helpersEnumValue(fakerToCore(this.faker), enumObject);
   }
 
   /**
@@ -1053,11 +502,7 @@ export class SimpleHelpersModule extends SimpleModuleBase {
           max: number;
         }
   ): number {
-    if (typeof numberOrRange === 'number') {
-      return numberOrRange;
-    }
-
-    return this.faker.number.int(numberOrRange);
+    return helpersRangeToNumber(fakerToCore(this.faker), numberOrRange);
   }
 
   /**
@@ -1099,12 +544,7 @@ export class SimpleHelpersModule extends SimpleModuleBase {
           };
     } = {}
   ): TResult[] {
-    const count = this.rangeToNumber(options.count ?? 3);
-    if (count <= 0) {
-      return [];
-    }
-
-    return Array.from({ length: count }, method);
+    return helpersMultiple(fakerToCore(this.faker), method, options);
   }
 }
 
@@ -1158,12 +598,17 @@ export class HelpersModule extends SimpleHelpersModule {
    * It is also NOT possible to use any non-faker methods or plain javascript in such patterns.
    *
    * @param pattern The pattern string that will get interpolated.
+   * @param entrypoints The entrypoints to resolve on.
+   * To use any of the faker methods, you have to pass the respective module/the module registry.
+   * Defaults to `[ fakerCore.definitions ]`.
    *
    * @see faker.helpers.mustache(): For using custom functions to resolve templates.
    *
    * @example
-   * faker.helpers.fake('{{person.lastName}}') // 'Barrows'
-   * faker.helpers.fake('{{person.lastName}}, {{person.firstName}} {{person.suffix}}') // 'Durgan, Noe MD'
+   * faker.helpers.fake('{{location.city_name}}') // 'Panda City'
+   * faker.helpers.fake('From {{en.location.city_name}} to {{de.location.city_name}}', [{ en, de }]) // 'From London to Berlin'
+   * faker.helpers.fake('{{person.lastName}}', [moduleRegistry]) // 'Barrows'
+   * faker.helpers.fake('{{person.lastName}}, {{person.firstName}} {{person.suffix}}', [{ person: personModule }]) // 'Durgan, Noe MD'
    * faker.helpers.fake('This is static test.') // 'This is static test.'
    * faker.helpers.fake('Good Morning {{person.firstName}}!') // 'Good Morning Estelle!'
    * faker.helpers.fake('You can visit me at {{location.streetAddress(true)}}.') // 'You can visit me at 3393 Ronny Way Apt. 742.'
@@ -1172,7 +617,7 @@ export class HelpersModule extends SimpleHelpersModule {
    *
    * @since 7.4.0
    */
-  fake(pattern: string): string;
+  fake(pattern: string, entrypoints?: ReadonlyArray<unknown>): string;
   /**
    * Generator for combining faker methods based on an array containing static string inputs.
    *
@@ -1198,7 +643,7 @@ export class HelpersModule extends SimpleHelpersModule {
    * const message = faker.helpers.fake([
    *   'You can call me at {{phone.number(+!# !## #### #####!)}}.',
    *   'My email is {{internet.email}}.',
-   * ]);
+   * ], [moduleRegistry]);
    * ```
    *
    * It is also possible to use multiple parameters (comma separated).
@@ -1210,15 +655,22 @@ export class HelpersModule extends SimpleHelpersModule {
    * It is also NOT possible to use any non-faker methods or plain javascript in such patterns.
    *
    * @param patterns The array to select a pattern from, that will then get interpolated. Must not be empty.
+   * @param entrypoints The entrypoints to resolve on.
+   * To use any of the faker methods, you have to pass the respective module/the module registry.
+   * Defaults to `[ fakerCore.definitions ]`.
    *
    * @see faker.helpers.mustache(): For using custom functions to resolve templates.
    *
    * @example
-   * faker.helpers.fake(['A: {{person.firstName}}', 'B: {{person.lastName}}']) // 'A: Barry'
+   * faker.helpers.fake(['{{location.city_name}}', '{{location.city_pattern}}']) // 'Panda City'
+   * faker.helpers.fake(['A: {{person.firstName}}', 'B: {{person.lastName}}'], [moduleRegistry]) // 'A: Barry'
    *
    * @since 8.0.0
    */
-  fake(patterns: ReadonlyArray<string>): string;
+  fake(
+    patterns: ReadonlyArray<string>,
+    entrypoints?: ReadonlyArray<unknown>
+  ): string;
   /**
    * Generator for combining faker methods based on a static string input or an array of static string inputs.
    *
@@ -1253,12 +705,17 @@ export class HelpersModule extends SimpleHelpersModule {
    * It is also NOT possible to use any non-faker methods or plain javascript in such patterns.
    *
    * @param pattern The pattern string that will get interpolated. If an array is passed, a random element will be picked and interpolated.
+   * @param entrypoints The entrypoints to resolve on.
+   * To use any of the faker methods, you have to pass the respective module/the module registry.
+   * Defaults to `[ fakerCore.definitions ]`.
    *
    * @see faker.helpers.mustache(): For using custom functions to resolve templates.
    *
    * @example
-   * faker.helpers.fake('{{person.lastName}}') // 'Barrows'
-   * faker.helpers.fake('{{person.lastName}}, {{person.firstName}} {{person.suffix}}') // 'Durgan, Noe MD'
+   * faker.helpers.fake('{{location.city_name}}') // 'Panda City'
+   * faker.helpers.fake('From {{en.location.city_name}} to {{de.location.city_name}}', [{ en, de }]) // 'From London to Berlin'
+   * faker.helpers.fake('{{person.lastName}}', [moduleRegistry]) // 'Barrows'
+   * faker.helpers.fake('{{person.lastName}}, {{person.firstName}} {{person.suffix}}', [{ person: personModule }]) // 'Durgan, Noe MD'
    * faker.helpers.fake('This is static test.') // 'This is static test.'
    * faker.helpers.fake('Good Morning {{person.firstName}}!') // 'Good Morning Estelle!'
    * faker.helpers.fake('You can visit me at {{location.streetAddress(true)}}.') // 'You can visit me at 3393 Ronny Way Apt. 742.'
@@ -1267,34 +724,17 @@ export class HelpersModule extends SimpleHelpersModule {
    *
    * @since 7.4.0
    */
-  fake(pattern: string | ReadonlyArray<string>): string;
-  fake(pattern: string | ReadonlyArray<string>): string {
-    pattern =
-      typeof pattern === 'string' ? pattern : this.arrayElement(pattern);
-
-    // find first matching {{ and }}
-    const start = pattern.search(/{{[a-z]/);
-    const end = pattern.indexOf('}}', start);
-
-    // if no {{ and }} is found, we are done
-    if (start === -1 || end === -1) {
-      return pattern;
-    }
-
-    // extract method name from between the {{ }} that we found
-    // for example: {{person.firstName}}
-    const token = pattern.substring(start + 2, end + 2);
-    const method = token.replace('}}', '').replace('{{', '');
-
-    const result = fakeEval(method, this.faker);
-    const stringified = String(result);
-
-    // Replace the found tag with the returned fake value
-    // We cannot use string.replace here because the result might contain evaluated characters
-    const patched =
-      pattern.substring(0, start) + stringified + pattern.substring(end + 2);
-
-    // return the response recursively until we are done finding all tags
-    return this.fake(patched);
+  fake(
+    pattern: string | ReadonlyArray<string>,
+    entrypoints?: ReadonlyArray<unknown>
+  ): string;
+  fake(
+    pattern: string | ReadonlyArray<string>,
+    entrypoints: ReadonlyArray<unknown> = [
+      this.faker,
+      this.faker.rawDefinitions,
+    ]
+  ): string {
+    return helpersFake(fakerToCore(this.faker), pattern, entrypoints);
   }
 }

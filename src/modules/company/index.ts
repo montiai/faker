@@ -1,4 +1,14 @@
+import { fakerToCore } from '../../internal/faker-to-core';
 import { ModuleBase } from '../../internal/module-base';
+import { buzzAdjective as companyBuzzAdjective } from './buzz-adjective';
+import { buzzNoun as companyBuzzNoun } from './buzz-noun';
+import { buzzPhrase as companyBuzzPhrase } from './buzz-phrase';
+import { buzzVerb as companyBuzzVerb } from './buzz-verb';
+import { catchPhrase as companyCatchPhrase } from './catch-phrase';
+import { catchPhraseAdjective as companyCatchPhraseAdjective } from './catch-phrase-adjective';
+import { catchPhraseDescriptor as companyCatchPhraseDescriptor } from './catch-phrase-descriptor';
+import { catchPhraseNoun as companyCatchPhraseNoun } from './catch-phrase-noun';
+import { name as companyName } from './name';
 
 /**
  * Module to generate company related entries.
@@ -24,7 +34,7 @@ export class CompanyModule extends ModuleBase {
    * @since 7.4.0
    */
   name(): string {
-    return this.faker.helpers.fake(this.faker.definitions.company.name_pattern);
+    return companyName(fakerToCore(this.faker));
   }
 
   /**
@@ -36,11 +46,7 @@ export class CompanyModule extends ModuleBase {
    * @since 2.0.1
    */
   catchPhrase(): string {
-    return [
-      this.catchPhraseAdjective(),
-      this.catchPhraseDescriptor(),
-      this.catchPhraseNoun(),
-    ].join(' ');
+    return companyCatchPhrase(fakerToCore(this.faker));
   }
 
   /**
@@ -52,7 +58,7 @@ export class CompanyModule extends ModuleBase {
    * @since 8.0.0
    */
   buzzPhrase(): string {
-    return [this.buzzVerb(), this.buzzAdjective(), this.buzzNoun()].join(' ');
+    return companyBuzzPhrase(fakerToCore(this.faker));
   }
 
   /**
@@ -64,9 +70,7 @@ export class CompanyModule extends ModuleBase {
    * @since 2.0.1
    */
   catchPhraseAdjective(): string {
-    return this.faker.helpers.arrayElement(
-      this.faker.definitions.company.adjective
-    );
+    return companyCatchPhraseAdjective(fakerToCore(this.faker));
   }
 
   /**
@@ -78,9 +82,7 @@ export class CompanyModule extends ModuleBase {
    * @since 2.0.1
    */
   catchPhraseDescriptor(): string {
-    return this.faker.helpers.arrayElement(
-      this.faker.definitions.company.descriptor
-    );
+    return companyCatchPhraseDescriptor(fakerToCore(this.faker));
   }
 
   /**
@@ -92,7 +94,7 @@ export class CompanyModule extends ModuleBase {
    * @since 2.0.1
    */
   catchPhraseNoun(): string {
-    return this.faker.helpers.arrayElement(this.faker.definitions.company.noun);
+    return companyCatchPhraseNoun(fakerToCore(this.faker));
   }
 
   /**
@@ -104,9 +106,7 @@ export class CompanyModule extends ModuleBase {
    * @since 8.0.0
    */
   buzzAdjective(): string {
-    return this.faker.helpers.arrayElement(
-      this.faker.definitions.company.buzz_adjective
-    );
+    return companyBuzzAdjective(fakerToCore(this.faker));
   }
 
   /**
@@ -118,9 +118,7 @@ export class CompanyModule extends ModuleBase {
    * @since 8.0.0
    */
   buzzVerb(): string {
-    return this.faker.helpers.arrayElement(
-      this.faker.definitions.company.buzz_verb
-    );
+    return companyBuzzVerb(fakerToCore(this.faker));
   }
 
   /**
@@ -132,8 +130,6 @@ export class CompanyModule extends ModuleBase {
    * @since 8.0.0
    */
   buzzNoun(): string {
-    return this.faker.helpers.arrayElement(
-      this.faker.definitions.company.buzz_noun
-    );
+    return companyBuzzNoun(fakerToCore(this.faker));
   }
 }

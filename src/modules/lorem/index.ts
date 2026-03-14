@@ -1,5 +1,14 @@
+import { fakerToCore } from '../../internal/faker-to-core';
 import { ModuleBase } from '../../internal/module-base';
-import { filterWordListByLength } from '../word/_filter-word-list-by-length';
+import { lines as loremLines } from './lines';
+import { paragraph as loremParagraph } from './paragraph';
+import { paragraphs as loremParagraphs } from './paragraphs';
+import { sentence as loremSentence } from './sentence';
+import { sentences as loremSentences } from './sentences';
+import { slug as loremSlug } from './slug';
+import { text as loremText } from './text';
+import { word as loremWord } from './word';
+import { words as loremWords } from './words';
 
 /**
  * Module to generate random texts and words.
@@ -75,16 +84,7 @@ export class LoremModule extends ModuleBase {
           strategy?: 'fail' | 'closest' | 'shortest' | 'longest' | 'any-length';
         } = {}
   ): string {
-    if (typeof options === 'number') {
-      options = { length: options };
-    }
-
-    return this.faker.helpers.arrayElement(
-      filterWordListByLength({
-        ...options,
-        wordList: this.faker.definitions.lorem.word,
-      })
-    );
+    return loremWord(fakerToCore(this.faker), options);
   }
 
   /**
@@ -115,9 +115,7 @@ export class LoremModule extends ModuleBase {
           max: number;
         } = 3
   ): string {
-    return this.faker.helpers
-      .multiple(() => this.word(), { count: wordCount })
-      .join(' ');
+    return loremWords(fakerToCore(this.faker), wordCount);
   }
 
   /**
@@ -148,8 +146,7 @@ export class LoremModule extends ModuleBase {
           max: number;
         } = { min: 3, max: 10 }
   ): string {
-    const sentence = this.words(wordCount);
-    return `${sentence.charAt(0).toUpperCase() + sentence.substring(1)}.`;
+    return loremSentence(fakerToCore(this.faker), wordCount);
   }
 
   /**
@@ -180,8 +177,7 @@ export class LoremModule extends ModuleBase {
           max: number;
         } = 3
   ): string {
-    const words = this.words(wordCount);
-    return this.faker.helpers.slugify(words);
+    return loremSlug(fakerToCore(this.faker), wordCount);
   }
 
   /**
@@ -217,9 +213,7 @@ export class LoremModule extends ModuleBase {
         } = { min: 2, max: 6 },
     separator: string = ' '
   ): string {
-    return this.faker.helpers
-      .multiple(() => this.sentence(), { count: sentenceCount })
-      .join(separator);
+    return loremSentences(fakerToCore(this.faker), sentenceCount, separator);
   }
 
   /**
@@ -250,7 +244,7 @@ export class LoremModule extends ModuleBase {
           max: number;
         } = 3
   ): string {
-    return this.sentences(sentenceCount);
+    return loremParagraph(fakerToCore(this.faker), sentenceCount);
   }
 
   /**
@@ -300,9 +294,7 @@ export class LoremModule extends ModuleBase {
         } = 3,
     separator: string = '\n'
   ): string {
-    return this.faker.helpers
-      .multiple(() => this.paragraph(), { count: paragraphCount })
-      .join(separator);
+    return loremParagraphs(fakerToCore(this.faker), paragraphCount, separator);
   }
 
   /**
@@ -320,17 +312,7 @@ export class LoremModule extends ModuleBase {
    * @since 3.1.0
    */
   text(): string {
-    const methods: Array<keyof LoremModule> = [
-      'sentence',
-      'sentences',
-      'paragraph',
-      'paragraphs',
-      'lines',
-    ];
-
-    const method = this.faker.helpers.arrayElement(methods);
-
-    return this[method]();
+    return loremText(fakerToCore(this.faker));
   }
 
   /**
@@ -374,6 +356,6 @@ export class LoremModule extends ModuleBase {
           max: number;
         } = { min: 1, max: 5 }
   ): string {
-    return this.sentences(lineCount, '\n');
+    return loremLines(fakerToCore(this.faker), lineCount);
   }
 }

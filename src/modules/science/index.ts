@@ -1,6 +1,9 @@
+import { fakerToCore } from '../../internal/faker-to-core';
 import { ModuleBase } from '../../internal/module-base';
 import type { ChemicalElement } from './chemical-element';
+import { chemicalElement as scienceChemicalElement } from './chemical-element';
 import type { Unit } from './unit';
+import { unit as scienceUnit } from './unit';
 
 export type { ChemicalElement } from './chemical-element';
 export type { Unit } from './unit';
@@ -24,9 +27,7 @@ export class ScienceModule extends ModuleBase {
    * @since 7.2.0
    */
   chemicalElement(): ChemicalElement {
-    return this.faker.helpers.arrayElement(
-      this.faker.definitions.science.chemical_element
-    );
+    return scienceChemicalElement(fakerToCore(this.faker));
   }
 
   /**
@@ -40,6 +41,6 @@ export class ScienceModule extends ModuleBase {
    * @since 7.2.0
    */
   unit(): Unit {
-    return this.faker.helpers.arrayElement(this.faker.definitions.science.unit);
+    return scienceUnit(fakerToCore(this.faker));
   }
 }

@@ -1,4 +1,11 @@
+import { fakerToCore } from '../../internal/faker-to-core';
 import { ModuleBase } from '../../internal/module-base';
+import { author as bookAuthor } from './author';
+import { format as bookFormat } from './format';
+import { genre as bookGenre } from './genre';
+import { publisher as bookPublisher } from './publisher';
+import { series as bookSeries } from './series';
+import { title as bookTitle } from './title';
 
 /**
  * Module to generate book related entries.
@@ -26,7 +33,7 @@ export class BookModule extends ModuleBase {
    * @since 9.1.0
    */
   author(): string {
-    return this.faker.helpers.arrayElement(this.faker.definitions.book.author);
+    return bookAuthor(fakerToCore(this.faker));
   }
 
   /**
@@ -38,7 +45,7 @@ export class BookModule extends ModuleBase {
    * @since 9.1.0
    */
   format(): string {
-    return this.faker.helpers.arrayElement(this.faker.definitions.book.format);
+    return bookFormat(fakerToCore(this.faker));
   }
 
   /**
@@ -50,7 +57,7 @@ export class BookModule extends ModuleBase {
    * @since 9.1.0
    */
   genre(): string {
-    return this.faker.helpers.arrayElement(this.faker.definitions.book.genre);
+    return bookGenre(fakerToCore(this.faker));
   }
 
   /**
@@ -62,9 +69,7 @@ export class BookModule extends ModuleBase {
    * @since 9.1.0
    */
   publisher(): string {
-    return this.faker.helpers.arrayElement(
-      this.faker.definitions.book.publisher
-    );
+    return bookPublisher(fakerToCore(this.faker));
   }
 
   /**
@@ -76,7 +81,7 @@ export class BookModule extends ModuleBase {
    * @since 9.1.0
    */
   series(): string {
-    return this.faker.helpers.arrayElement(this.faker.definitions.book.series);
+    return bookSeries(fakerToCore(this.faker));
   }
 
   /**
@@ -88,6 +93,6 @@ export class BookModule extends ModuleBase {
    * @since 9.1.0
    */
   title(): string {
-    return this.faker.helpers.arrayElement(this.faker.definitions.book.title);
+    return bookTitle(fakerToCore(this.faker));
   }
 }

@@ -1,4 +1,14 @@
+import { fakerToCore } from '../../internal/faker-to-core';
 import { ModuleBase } from '../../internal/module-base';
+import { bicycle as vehicleBicycle } from './bicycle';
+import { color as vehicleColor } from './color';
+import { fuel as vehicleFuel } from './fuel';
+import { manufacturer as vehicleManufacturer } from './manufacturer';
+import { model as vehicleModel } from './model';
+import { type as vehicleType } from './type';
+import { vehicle as vehicleVehicle } from './vehicle';
+import { vin as vehicleVin } from './vin';
+import { vrm as vehicleVrm } from './vrm';
 
 /**
  * Module to generate vehicle related entries.
@@ -19,7 +29,7 @@ export class VehicleModule extends ModuleBase {
    * @since 5.0.0
    */
   vehicle(): string {
-    return `${this.manufacturer()} ${this.model()}`;
+    return vehicleVehicle(fakerToCore(this.faker));
   }
 
   /**
@@ -31,9 +41,7 @@ export class VehicleModule extends ModuleBase {
    * @since 5.0.0
    */
   manufacturer(): string {
-    return this.faker.helpers.arrayElement(
-      this.faker.definitions.vehicle.manufacturer
-    );
+    return vehicleManufacturer(fakerToCore(this.faker));
   }
 
   /**
@@ -45,9 +53,7 @@ export class VehicleModule extends ModuleBase {
    * @since 5.0.0
    */
   model(): string {
-    return this.faker.helpers.arrayElement(
-      this.faker.definitions.vehicle.model
-    );
+    return vehicleModel(fakerToCore(this.faker));
   }
 
   /**
@@ -59,7 +65,7 @@ export class VehicleModule extends ModuleBase {
    * @since 5.0.0
    */
   type(): string {
-    return this.faker.helpers.arrayElement(this.faker.definitions.vehicle.type);
+    return vehicleType(fakerToCore(this.faker));
   }
 
   /**
@@ -71,7 +77,7 @@ export class VehicleModule extends ModuleBase {
    * @since 5.0.0
    */
   fuel(): string {
-    return this.faker.helpers.arrayElement(this.faker.definitions.vehicle.fuel);
+    return vehicleFuel(fakerToCore(this.faker));
   }
 
   /**
@@ -83,20 +89,7 @@ export class VehicleModule extends ModuleBase {
    * @since 5.0.0
    */
   vin(): string {
-    const exclude = ['o', 'i', 'q', 'O', 'I', 'Q'];
-    return `${this.faker.string.alphanumeric({
-      length: 10,
-      casing: 'upper',
-      exclude,
-    })}${this.faker.string.alpha({
-      length: 1,
-      casing: 'upper',
-      exclude,
-    })}${this.faker.string.alphanumeric({
-      length: 1,
-      casing: 'upper',
-      exclude,
-    })}${this.faker.string.numeric({ length: 5, allowLeadingZeros: true })}`;
+    return vehicleVin(fakerToCore(this.faker));
   }
 
   /**
@@ -108,7 +101,7 @@ export class VehicleModule extends ModuleBase {
    * @since 5.0.0
    */
   color(): string {
-    return this.faker.color.human();
+    return vehicleColor(fakerToCore(this.faker));
   }
 
   /**
@@ -120,16 +113,7 @@ export class VehicleModule extends ModuleBase {
    * @since 5.4.0
    */
   vrm(): string {
-    return `${this.faker.string.alpha({
-      length: 2,
-      casing: 'upper',
-    })}${this.faker.string.numeric({
-      length: 2,
-      allowLeadingZeros: true,
-    })}${this.faker.string.alpha({
-      length: 3,
-      casing: 'upper',
-    })}`;
+    return vehicleVrm(fakerToCore(this.faker));
   }
 
   /**
@@ -141,8 +125,6 @@ export class VehicleModule extends ModuleBase {
    * @since 5.5.0
    */
   bicycle(): string {
-    return this.faker.helpers.arrayElement(
-      this.faker.definitions.vehicle.bicycle_type
-    );
+    return vehicleBicycle(fakerToCore(this.faker));
   }
 }

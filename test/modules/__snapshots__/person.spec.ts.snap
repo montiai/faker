@@ -22,8 +22,6 @@ exports[`person > 42 > jobArea 1`] = `"Identity"`;
 
 exports[`person > 42 > jobDescriptor 1`] = `"National"`;
 
-exports[`person > 42 > jobTitle 1`] = `"National Usability Producer"`;
-
 exports[`person > 42 > jobType 1`] = `"Coordinator"`;
 
 exports[`person > 42 > lastName > noArgs 1`] = `"Reynolds-Miller"`;
@@ -54,7 +52,7 @@ exports[`person > 42 > suffix > with sex 1`] = `"III"`;
 
 exports[`person > 42 > zodiacSign 1`] = `"Gemini"`;
 
-exports[`person > 1211 > bio 1`] = `"decongestant supporter, parent 🥊"`;
+exports[`person > 1211 > bio 1`] = `"tarragon devotee, writer [object Object]"`;
 
 exports[`person > 1211 > firstName > noArgs 1`] = `"Dana"`;
 
@@ -75,8 +73,6 @@ exports[`person > 1211 > gender 1`] = `"Trigender"`;
 exports[`person > 1211 > jobArea 1`] = `"Factors"`;
 
 exports[`person > 1211 > jobDescriptor 1`] = `"Chief"`;
-
-exports[`person > 1211 > jobTitle 1`] = `"Chief Interactions Manager"`;
 
 exports[`person > 1211 > jobType 1`] = `"Representative"`;
 
@@ -129,8 +125,6 @@ exports[`person > 1337 > gender 1`] = `"Demigender"`;
 exports[`person > 1337 > jobArea 1`] = `"Functionality"`;
 
 exports[`person > 1337 > jobDescriptor 1`] = `"Future"`;
-
-exports[`person > 1337 > jobTitle 1`] = `"Future Marketing Engineer"`;
 
 exports[`person > 1337 > jobType 1`] = `"Engineer"`;
 

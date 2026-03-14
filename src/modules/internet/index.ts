@@ -1,53 +1,36 @@
-import { FakerError } from '../../errors/faker-error';
-import type { Faker } from '../../faker';
-import { toBase64Url } from '../../internal/base64';
+import { fakerToCore } from '../../internal/faker-to-core';
 import { ModuleBase } from '../../internal/module-base';
-import { charMapping } from './_char-mappings';
+import { displayName as internetDisplayName } from './display-name';
+import { domainName as internetDomainName } from './domain-name';
+import { domainSuffix as internetDomainSuffix } from './domain-suffix';
+import { domainWord as internetDomainWord } from './domain-word';
+import { email as internetEmail } from './email';
 import type { EmojiType } from './emoji';
+import { emoji as internetEmoji } from './emoji';
+import { exampleEmail as internetExampleEmail } from './example-email';
+import { httpMethod as internetHttpMethod } from './http-method';
 import type { HTTPStatusCodeType } from './http-status-code';
+import { httpStatusCode as internetHttpStatusCode } from './http-status-code';
+import { ip as internetIp } from './ip';
 import type { IPv4NetworkType } from './ipv4';
-import { ipv4Networks } from './ipv4';
+import { ipv4 as internetIpv4 } from './ipv4';
+import { ipv6 as internetIpv6 } from './ipv6';
+import { jwt as internetJwt } from './jwt';
+import { jwtAlgorithm as internetJwtAlgorithm } from './jwt-algorithm';
+import { mac as internetMac } from './mac';
+import { password as internetPassword } from './password';
+import { port as internetPort } from './port';
+import { protocol as internetProtocol } from './protocol';
 import type { HTTPProtocolType } from './url';
+import { url as internetUrl } from './url';
+import { userAgent as internetUserAgent } from './user-agent';
+import { username as internetUsername } from './username';
 
 export type { EmojiType } from './emoji';
 export type { HTTPStatusCodeType } from './http-status-code';
 export { IPv4Network } from './ipv4';
 export type { IPv4NetworkType } from './ipv4';
 export type { HTTPProtocolType } from './url';
-
-// Temp duplicate
-/**
- * Checks whether the given string is a valid slug for `domainWord`s.
- *
- * @param slug The slug to check.
- */
-function isValidDomainWordSlug(slug: string): boolean {
-  return /^[a-z][a-z-]*[a-z]$/i.exec(slug) !== null;
-}
-
-// Temp duplicate
-/**
- * Tries various ways to produce a valid domain word slug, falling back to a random string if needed.
- *
- * @param faker The faker instance to use.
- * @param word The initial word to slugify.
- */
-function makeValidDomainWordSlug(faker: Faker, word: string): string {
-  const slug1 = faker.helpers.slugify(word);
-  if (isValidDomainWordSlug(slug1)) {
-    return slug1;
-  }
-
-  const slug2 = faker.helpers.slugify(faker.lorem.word());
-  if (isValidDomainWordSlug(slug2)) {
-    return slug2;
-  }
-
-  return faker.string.alpha({
-    casing: 'lower',
-    length: faker.number.int({ min: 4, max: 8 }),
-  });
-}
 
 /**
  * Module to generate internet related entries.
@@ -109,40 +92,7 @@ export class InternetModule extends ModuleBase {
       allowSpecialCharacters?: boolean;
     } = {}
   ): string {
-    const {
-      firstName,
-      lastName,
-      provider = this.faker.helpers.arrayElement(
-        this.faker.definitions.internet.free_email
-      ),
-      allowSpecialCharacters = false,
-    } = options;
-
-    let localPart: string = this.username({ firstName, lastName });
-    // Strip any special characters from the local part of the email address
-    // This could happen if invalid chars are passed in manually in the firstName/lastName
-    localPart = localPart.replaceAll(/[^A-Za-z0-9._+-]+/g, '');
-
-    // The local part of an email address is limited to 64 chars per RFC 3696
-    // We limit to 50 chars to be more realistic
-    localPart = localPart.substring(0, 50);
-    if (allowSpecialCharacters) {
-      const usernameChars: string[] = [...'._-'];
-      const specialChars: string[] = [...".!#$%&'*+-/=?^_`{|}~"];
-      localPart = localPart.replace(
-        this.faker.helpers.arrayElement(usernameChars),
-        this.faker.helpers.arrayElement(specialChars)
-      );
-    }
-
-    // local parts may not contain two or more consecutive . characters
-    localPart = localPart.replaceAll(/\.{2,}/g, '.');
-
-    // local parts may not start with or end with a . character
-    localPart = localPart.replace(/^\./, '');
-    localPart = localPart.replace(/\.$/, '');
-
-    return `${localPart}@${provider}`;
+    return internetEmail(fakerToCore(this.faker), options);
   }
 
   /**
@@ -185,18 +135,7 @@ export class InternetModule extends ModuleBase {
       allowSpecialCharacters?: boolean;
     } = {}
   ): string {
-    const { firstName, lastName, allowSpecialCharacters = false } = options;
-
-    const provider = this.faker.helpers.arrayElement(
-      this.faker.definitions.internet.example_email
-    );
-
-    return this.email({
-      firstName,
-      lastName,
-      provider,
-      allowSpecialCharacters,
-    });
+    return internetExampleEmail(fakerToCore(this.faker), options);
   }
 
   /**
@@ -209,7 +148,7 @@ export class InternetModule extends ModuleBase {
    * @param options.firstName The optional first name to use. If not specified, a random one will be chosen.
    * @param options.lastName The optional last name to use. If not specified, a random one will be chosen.
    *
-   * @see faker.internet.displayName(): For generating an Unicode display name.
+   * @see faker.display.name(): For generating an Unicode display name.
    *
    * @example
    * faker.internet.username() // 'Nettie_Zboncak40'
@@ -239,52 +178,7 @@ export class InternetModule extends ModuleBase {
       lastName?: string;
     } = {}
   ): string {
-    const {
-      firstName = this.faker.person.firstName(),
-      lastName = this.faker.person.lastName(),
-      lastName: hasLastName,
-    } = options;
-
-    const separator = this.faker.helpers.arrayElement(['.', '_']);
-    const disambiguator = this.faker.number.int(99);
-    const strategies: Array<() => string> = [
-      () => `${firstName}${separator}${lastName}${disambiguator}`,
-      () => `${firstName}${separator}${lastName}`,
-    ];
-    if (!hasLastName) {
-      strategies.push(() => `${firstName}${disambiguator}`);
-    }
-
-    let result = this.faker.helpers.arrayElement(strategies)();
-
-    // There may still be non-ascii characters in the result.
-    // First remove simple accents etc
-    result = result
-      .normalize('NFKD') //for example è decomposes to as e +  ̀
-      .replaceAll(/[\u0300-\u036F]/g, ''); // removes combining marks
-
-    result = [...result]
-      .map((char) => {
-        // If we have a mapping for this character, (for Cyrillic, Greek etc) use it
-        if (charMapping[char]) {
-          return charMapping[char];
-        }
-
-        const charCode = char.codePointAt(0) ?? Number.NaN;
-
-        if (charCode < 0x80) {
-          // Keep ASCII characters
-          return char;
-        }
-
-        // Final fallback return the Unicode char code value for Chinese, Japanese, Korean etc, base-36 encoded
-        return charCode.toString(36);
-      })
-      .join('');
-    result = result.replaceAll("'", '');
-    result = result.replaceAll(' ', '');
-
-    return result;
+    return internetUsername(fakerToCore(this.faker), options);
   }
 
   /**
@@ -325,23 +219,7 @@ export class InternetModule extends ModuleBase {
       lastName?: string;
     } = {}
   ): string {
-    const {
-      firstName = this.faker.person.firstName(),
-      lastName = this.faker.person.lastName(),
-    } = options;
-
-    const separator = this.faker.helpers.arrayElement(['.', '_']);
-    const disambiguator = this.faker.number.int(99);
-    const strategies: Array<() => string> = [
-      () => `${firstName}${disambiguator}`,
-      () => `${firstName}${separator}${lastName}`,
-      () => `${firstName}${separator}${lastName}${disambiguator}`,
-    ];
-
-    let result = this.faker.helpers.arrayElement(strategies)();
-    result = result.replaceAll("'", '');
-    result = result.replaceAll(' ', '');
-    return result;
+    return internetDisplayName(fakerToCore(this.faker), options);
   }
 
   /**
@@ -353,8 +231,7 @@ export class InternetModule extends ModuleBase {
    * @since 2.1.5
    */
   protocol(): 'http' | 'https' {
-    const protocols: ['http', 'https'] = ['http', 'https'];
-    return this.faker.helpers.arrayElement(protocols);
+    return internetProtocol(fakerToCore(this.faker));
   }
 
   /**
@@ -374,14 +251,7 @@ export class InternetModule extends ModuleBase {
    * @since 5.4.0
    */
   httpMethod(): 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' {
-    const httpMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] = [
-      'GET',
-      'POST',
-      'PUT',
-      'DELETE',
-      'PATCH',
-    ];
-    return this.faker.helpers.arrayElement(httpMethods);
+    return internetHttpMethod(fakerToCore(this.faker));
   }
 
   /**
@@ -401,20 +271,12 @@ export class InternetModule extends ModuleBase {
       /**
        * A list of the HTTP status code types that should be used.
        *
-       * @default Object.keys(faker.definitions.internet.http_status_code)
+       * @default Object.keys(resolveLocaleData(fakerCore, 'internet', 'http_status_code'))
        */
       types?: ReadonlyArray<HTTPStatusCodeType>;
     } = {}
   ): number {
-    const {
-      types = Object.keys(
-        this.faker.definitions.internet.http_status_code
-      ) as HTTPStatusCodeType[],
-    } = options;
-    const httpStatusCodeType = this.faker.helpers.arrayElement(types);
-    return this.faker.helpers.arrayElement(
-      this.faker.definitions.internet.http_status_code[httpStatusCodeType]
-    );
+    return internetHttpStatusCode(fakerToCore(this.faker), options);
   }
 
   /**
@@ -447,9 +309,7 @@ export class InternetModule extends ModuleBase {
       protocol?: HTTPProtocolType;
     } = {}
   ): string {
-    const { appendSlash = this.faker.datatype.boolean(), protocol = 'https' } =
-      options;
-    return `${protocol}://${this.domainName()}${appendSlash ? '/' : ''}`;
+    return internetUrl(fakerToCore(this.faker), options);
   }
 
   /**
@@ -461,7 +321,7 @@ export class InternetModule extends ModuleBase {
    * @since 2.0.1
    */
   domainName(): string {
-    return `${this.domainWord()}.${this.domainSuffix()}`;
+    return internetDomainName(fakerToCore(this.faker));
   }
 
   /**
@@ -474,9 +334,7 @@ export class InternetModule extends ModuleBase {
    * @since 2.0.1
    */
   domainSuffix(): string {
-    return this.faker.helpers.arrayElement(
-      this.faker.definitions.internet.domain_suffix
-    );
+    return internetDomainSuffix(fakerToCore(this.faker));
   }
 
   /**
@@ -489,15 +347,7 @@ export class InternetModule extends ModuleBase {
    * @since 2.0.1
    */
   domainWord(): string {
-    // Generate an ASCII "word" in the form `noun-adjective`
-    // For locales with non-ASCII characters, we fall back to lorem words, or a random string
-
-    const word1 = makeValidDomainWordSlug(
-      this.faker,
-      this.faker.word.adjective()
-    );
-    const word2 = makeValidDomainWordSlug(this.faker, this.faker.word.noun());
-    return `${word1}-${word2}`.toLowerCase();
+    return internetDomainWord(fakerToCore(this.faker));
   }
 
   /**
@@ -510,7 +360,7 @@ export class InternetModule extends ModuleBase {
    * @since 2.0.1
    */
   ip(): string {
-    return this.faker.datatype.boolean() ? this.ipv4() : this.ipv6();
+    return internetIp(fakerToCore(this.faker));
   }
 
   /**
@@ -589,27 +439,7 @@ export class InternetModule extends ModuleBase {
   ipv4(
     options: { cidrBlock?: string; network?: IPv4NetworkType } = {}
   ): string {
-    const { network = 'any', cidrBlock = ipv4Networks[network] } = options;
-
-    if (!/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}$/.test(cidrBlock)) {
-      throw new FakerError(
-        `Invalid CIDR block provided: ${cidrBlock}. Must be in the format x.x.x.x/y.`
-      );
-    }
-
-    const [ipText, subnet] = cidrBlock.split('/');
-    const subnetMask = 0xffffffff >>> Number.parseInt(subnet);
-    const [rawIp1, rawIp2, rawIp3, rawIp4] = ipText.split('.').map(Number);
-    const rawIp = (rawIp1 << 24) | (rawIp2 << 16) | (rawIp3 << 8) | rawIp4;
-    const networkIp = rawIp & ~subnetMask;
-    const hostOffset = this.faker.number.int(subnetMask);
-    const ip = networkIp | hostOffset;
-    return [
-      (ip >>> 24) & 0xff,
-      (ip >>> 16) & 0xff,
-      (ip >>> 8) & 0xff,
-      ip & 0xff,
-    ].join('.');
+    return internetIpv4(fakerToCore(this.faker), options);
   }
 
   /**
@@ -621,13 +451,7 @@ export class InternetModule extends ModuleBase {
    * @since 4.0.0
    */
   ipv6(): string {
-    return Array.from({ length: 8 }, () =>
-      this.faker.string.hexadecimal({
-        length: 4,
-        casing: 'lower',
-        prefix: '',
-      })
-    ).join(':');
+    return internetIpv6(fakerToCore(this.faker));
   }
 
   /**
@@ -639,7 +463,7 @@ export class InternetModule extends ModuleBase {
    * @since 5.4.0
    */
   port(): number {
-    return this.faker.number.int(65535);
+    return internetPort(fakerToCore(this.faker));
   }
 
   /**
@@ -652,16 +476,14 @@ export class InternetModule extends ModuleBase {
    * @since 2.0.1
    */
   userAgent(): string {
-    return this.faker.helpers.fake(
-      this.faker.definitions.internet.user_agent_pattern
-    );
+    return internetUserAgent(fakerToCore(this.faker));
   }
 
   /**
    * Generates a random mac address.
    *
    * @param options An options object.
-   * @param separator The optional separator to use. Can be either `':'`, `'-'` or `''`. Defaults to `':'`.
+   * @param options.separator The optional separator to use. Can be either `':'`, `'-'` or `''`. Defaults to `':'`.
    *
    * @example
    * faker.internet.mac() // '32:8e:2e:09:c6:05'
@@ -691,7 +513,7 @@ export class InternetModule extends ModuleBase {
    * Generates a random mac address.
    *
    * @param options The optional separator or an options object.
-   * @param separator The optional separator to use. Can be either `':'`, `'-'` or `''`. Defaults to `':'`.
+   * @param options.separator The optional separator to use. Can be either `':'`, `'-'` or `''`. Defaults to `':'`.
    *
    * @example
    * faker.internet.mac() // '32:8e:2e:09:c6:05'
@@ -722,28 +544,7 @@ export class InternetModule extends ModuleBase {
           separator?: string;
         } = {}
   ): string {
-    if (typeof options === 'string') {
-      options = { separator: options };
-    }
-
-    let { separator = ':' } = options;
-
-    let i: number;
-    let mac = '';
-
-    const acceptableSeparators = [':', '-', ''];
-    if (!acceptableSeparators.includes(separator)) {
-      separator = ':';
-    }
-
-    for (i = 0; i < 12; i++) {
-      mac += this.faker.number.hex(15);
-      if (i % 2 === 1 && i !== 11) {
-        mac += separator;
-      }
-    }
-
-    return mac;
+    return internetMac(fakerToCore(this.faker), options);
   }
 
   /**
@@ -795,48 +596,7 @@ export class InternetModule extends ModuleBase {
       prefix?: string;
     } = {}
   ): string {
-    /*
-     * password-generator ( function )
-     * Copyright(c) 2011-2013 Bermi Ferrer <bermi@bermilabs.com>
-     * MIT Licensed
-     */
-    const vowel = /[aeiouAEIOU]$/;
-    const consonant = /[bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ]$/;
-    const _password = (
-      length: number,
-      memorable: boolean,
-      pattern: RegExp,
-      prefix: string
-    ): string => {
-      if (prefix.length >= length) {
-        return prefix;
-      }
-
-      if (memorable) {
-        pattern = consonant.test(prefix) ? vowel : consonant;
-      }
-
-      const n = this.faker.number.int(94) + 33;
-      let char = String.fromCodePoint(n);
-      if (memorable) {
-        char = char.toLowerCase();
-      }
-
-      if (!pattern.test(char)) {
-        return _password(length, memorable, pattern, prefix);
-      }
-
-      return _password(length, memorable, pattern, prefix + char);
-    };
-
-    const {
-      length = 15,
-      memorable = false,
-      pattern = /\w/,
-      prefix = '',
-    } = options;
-
-    return _password(length, memorable, pattern, prefix);
+    return internetPassword(fakerToCore(this.faker), options);
   }
 
   /**
@@ -861,13 +621,7 @@ export class InternetModule extends ModuleBase {
       types?: ReadonlyArray<EmojiType>;
     } = {}
   ): string {
-    const {
-      types = Object.keys(this.faker.definitions.internet.emoji) as EmojiType[],
-    } = options;
-    const emojiType = this.faker.helpers.arrayElement(types);
-    return this.faker.helpers.arrayElement(
-      this.faker.definitions.internet.emoji[emojiType]
-    );
+    return internetEmoji(fakerToCore(this.faker), options);
   }
 
   /**
@@ -882,9 +636,7 @@ export class InternetModule extends ModuleBase {
    * @since 9.1.0
    */
   jwtAlgorithm(): string {
-    return this.faker.helpers.arrayElement(
-      this.faker.definitions.internet.jwt_algorithm
-    );
+    return internetJwtAlgorithm(fakerToCore(this.faker));
   }
 
   /**
@@ -898,7 +650,7 @@ export class InternetModule extends ModuleBase {
    * @param options.refDate The date to use as reference point for the newly generated date.
    *
    * @see https://datatracker.ietf.org/doc/html/rfc7519
-   * @see faker.internet.jwtAlgorithm(): For generating random JWT (JSON Web Token) Algorithm.
+   * @see faker.jwt.algorithm(): For generating random JWT (JSON Web Token) Algorithm.
    *
    * @example
    * faker.internet.jwt() // 'eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzI2MzgxMDYsImV4cCI6MTczMjY5MjUwOSwibmJmIjoxNzA1MDgxNjQ4LCJpc3MiOiJHdXRrb3dza2kgYW5kIFNvbnMiLCJzdWIiOiJlMzQxZjMwNS0yM2I2LTRkYmQtOTY2ZC1iNDRiZmM0ZGIzMGUiLCJhdWQiOiI0YzMwZGE3Yi0zZDUzLTQ4OGUtYTAyZC0zOWI2MDZiZmYxMTciLCJqdGkiOiJiMGZmOTMzOC04ODMwLTRmNDgtYjA3Ny1kNDNmMjU2OGZlYzAifQ.oDLVR73M0u5SjMPlc1aruxbdK7l2titXSeo9J5M1JUd65a1X9MhCz7FOobtX8eaj'
@@ -938,37 +690,11 @@ export class InternetModule extends ModuleBase {
       /**
        * The date to use as reference point for the newly generated date.
        *
-       * @default faker.defaultRefDate()
+       * @default getDefaultRefDate(fakerCore)
        */
       refDate?: string | Date | number;
     } = {}
   ): string {
-    const { refDate = this.faker.defaultRefDate() } = options;
-
-    const iatDefault = this.faker.date.recent({ refDate });
-
-    const {
-      header = {
-        alg: this.jwtAlgorithm(),
-        typ: 'JWT',
-      },
-      payload = {
-        iat: Math.round(iatDefault.valueOf() / 1000),
-        exp: Math.round(
-          this.faker.date.soon({ refDate: iatDefault }).valueOf() / 1000
-        ),
-        nbf: Math.round(this.faker.date.anytime({ refDate }).valueOf() / 1000),
-        iss: this.faker.company.name(),
-        sub: this.faker.string.uuid(),
-        aud: this.faker.string.uuid(),
-        jti: this.faker.string.uuid(),
-      },
-    } = options;
-
-    const encodedHeader = toBase64Url(JSON.stringify(header));
-    const encodedPayload = toBase64Url(JSON.stringify(payload));
-    const signature = this.faker.string.alphanumeric(64);
-
-    return `${encodedHeader}.${encodedPayload}.${signature}`;
+    return internetJwt(fakerToCore(this.faker), options);
   }
 }

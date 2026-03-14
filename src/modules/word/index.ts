@@ -1,6 +1,14 @@
-import { FakerError } from '../../errors/faker-error';
+import { fakerToCore } from '../../internal/faker-to-core';
 import { ModuleBase } from '../../internal/module-base';
-import { filterWordListByLength } from './_filter-word-list-by-length';
+import { adjective as wordAdjective } from './adjective';
+import { adverb as wordAdverb } from './adverb';
+import { conjunction as wordConjunction } from './conjunction';
+import { interjection as wordInterjection } from './interjection';
+import { noun as wordNoun } from './noun';
+import { preposition as wordPreposition } from './preposition';
+import { sample as wordSample } from './sample';
+import { verb as wordVerb } from './verb';
+import { words as wordWords } from './words';
 
 /**
  * Module to return various types of words.
@@ -66,16 +74,7 @@ export class WordModule extends ModuleBase {
           strategy?: 'fail' | 'closest' | 'shortest' | 'longest' | 'any-length';
         } = {}
   ): string {
-    if (typeof options === 'number') {
-      options = { length: options };
-    }
-
-    return this.faker.helpers.arrayElement(
-      filterWordListByLength({
-        ...options,
-        wordList: this.faker.definitions.word.adjective,
-      })
-    );
+    return wordAdjective(fakerToCore(this.faker), options);
   }
 
   /**
@@ -138,16 +137,7 @@ export class WordModule extends ModuleBase {
           strategy?: 'fail' | 'closest' | 'shortest' | 'longest' | 'any-length';
         } = {}
   ): string {
-    if (typeof options === 'number') {
-      options = { length: options };
-    }
-
-    return this.faker.helpers.arrayElement(
-      filterWordListByLength({
-        ...options,
-        wordList: this.faker.definitions.word.adverb,
-      })
-    );
+    return wordAdverb(fakerToCore(this.faker), options);
   }
 
   /**
@@ -210,16 +200,7 @@ export class WordModule extends ModuleBase {
           strategy?: 'fail' | 'closest' | 'shortest' | 'longest' | 'any-length';
         } = {}
   ): string {
-    if (typeof options === 'number') {
-      options = { length: options };
-    }
-
-    return this.faker.helpers.arrayElement(
-      filterWordListByLength({
-        ...options,
-        wordList: this.faker.definitions.word.conjunction,
-      })
-    );
+    return wordConjunction(fakerToCore(this.faker), options);
   }
 
   /**
@@ -282,16 +263,7 @@ export class WordModule extends ModuleBase {
           strategy?: 'fail' | 'closest' | 'shortest' | 'longest' | 'any-length';
         } = {}
   ): string {
-    if (typeof options === 'number') {
-      options = { length: options };
-    }
-
-    return this.faker.helpers.arrayElement(
-      filterWordListByLength({
-        ...options,
-        wordList: this.faker.definitions.word.interjection,
-      })
-    );
+    return wordInterjection(fakerToCore(this.faker), options);
   }
 
   /**
@@ -354,16 +326,7 @@ export class WordModule extends ModuleBase {
           strategy?: 'fail' | 'closest' | 'shortest' | 'longest' | 'any-length';
         } = {}
   ): string {
-    if (typeof options === 'number') {
-      options = { length: options };
-    }
-
-    return this.faker.helpers.arrayElement(
-      filterWordListByLength({
-        ...options,
-        wordList: this.faker.definitions.word.noun,
-      })
-    );
+    return wordNoun(fakerToCore(this.faker), options);
   }
 
   /**
@@ -426,16 +389,7 @@ export class WordModule extends ModuleBase {
           strategy?: 'fail' | 'closest' | 'shortest' | 'longest' | 'any-length';
         } = {}
   ): string {
-    if (typeof options === 'number') {
-      options = { length: options };
-    }
-
-    return this.faker.helpers.arrayElement(
-      filterWordListByLength({
-        ...options,
-        wordList: this.faker.definitions.word.preposition,
-      })
-    );
+    return wordPreposition(fakerToCore(this.faker), options);
   }
 
   /**
@@ -498,16 +452,7 @@ export class WordModule extends ModuleBase {
           strategy?: 'fail' | 'closest' | 'shortest' | 'longest' | 'any-length';
         } = {}
   ): string {
-    if (typeof options === 'number') {
-      options = { length: options };
-    }
-
-    return this.faker.helpers.arrayElement(
-      filterWordListByLength({
-        ...options,
-        wordList: this.faker.definitions.word.verb,
-      })
-    );
+    return wordVerb(fakerToCore(this.faker), options);
   }
 
   /**
@@ -568,28 +513,7 @@ export class WordModule extends ModuleBase {
           strategy?: 'fail' | 'closest' | 'shortest' | 'longest' | 'any-length';
         } = {}
   ): string {
-    const wordMethods = this.faker.helpers.shuffle([
-      this.adjective,
-      this.adverb,
-      this.conjunction,
-      this.interjection,
-      this.noun,
-      this.preposition,
-      this.verb,
-    ]);
-
-    for (const randomWordMethod of wordMethods) {
-      try {
-        return randomWordMethod(options);
-      } catch {
-        // catch missing locale data potentially required by randomWordMethod
-        continue;
-      }
-    }
-
-    throw new FakerError(
-      'No matching word data available for the current locale'
-    );
+    return wordSample(fakerToCore(this.faker), options);
   }
 
   /**
@@ -629,14 +553,6 @@ export class WordModule extends ModuleBase {
               };
         } = {}
   ): string {
-    if (typeof options === 'number') {
-      options = { count: options };
-    }
-
-    const { count = { min: 1, max: 3 } } = options;
-
-    return this.faker.helpers
-      .multiple(() => this.sample(), { count })
-      .join(' ');
+    return wordWords(fakerToCore(this.faker), options);
   }
 }

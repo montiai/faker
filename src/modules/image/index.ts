@@ -1,7 +1,13 @@
-import { toBase64 } from '../../internal/base64';
-import { deprecated } from '../../internal/deprecated';
+import { fakerToCore } from '../../internal/faker-to-core';
 import { ModuleBase } from '../../internal/module-base';
 import type { SexType } from '../person';
+import { avatar as imageAvatar } from './avatar';
+import { avatarGitHub as imageAvatarGitHub } from './avatar-git-hub';
+import { dataUri as imageDataUri } from './data-uri';
+import { personPortrait as imagePersonPortrait } from './person-portrait';
+import { url as imageUrl } from './url';
+import { urlLoremFlickr as imageUrlLoremFlickr } from './url-lorem-flickr';
+import { urlPicsumPhotos as imageUrlPicsumPhotos } from './url-picsum-photos';
 
 /**
  * Module to generate images.
@@ -29,12 +35,7 @@ export class ImageModule extends ModuleBase {
    * @since 2.0.1
    */
   avatar(): string {
-    // Add new avatar providers here, when adding a new one.
-    const avatarMethod = this.faker.helpers.arrayElement([
-      this.personPortrait,
-      this.avatarGitHub,
-    ]);
-    return avatarMethod();
+    return imageAvatar(fakerToCore(this.faker));
   }
 
   /**
@@ -49,9 +50,7 @@ export class ImageModule extends ModuleBase {
    * @since 8.0.0
    */
   avatarGitHub(): string {
-    return `https://avatars.githubusercontent.com/u/${this.faker.number.int(
-      100000000
-    )}`;
+    return imageAvatarGitHub(fakerToCore(this.faker));
   }
 
   /**
@@ -75,7 +74,7 @@ export class ImageModule extends ModuleBase {
        * The sex of the person for the avatar.
        * Can be `'female'` or `'male'`. `'generic'` uses a random selection.
        *
-       * @default faker.person.sexType()
+       * @default sexType(fakerCore)
        */
       sex?: SexType;
       /**
@@ -87,16 +86,7 @@ export class ImageModule extends ModuleBase {
       size?: 512 | 256 | 128 | 64 | 32;
     } = {}
   ): string {
-    const { size = 512 } = options;
-    let { sex = this.faker.person.sexType() } = options;
-
-    if (sex === 'generic') {
-      sex = this.faker.person.sexType();
-    }
-
-    const baseURL =
-      'https://cdn.jsdelivr.net/gh/faker-js/assets-person-portrait';
-    return `${baseURL}/${sex}/${size}/${this.faker.number.int({ min: 0, max: 99 })}.jpg`;
+    return imagePersonPortrait(fakerToCore(this.faker), options);
   }
 
   /**
@@ -118,29 +108,18 @@ export class ImageModule extends ModuleBase {
       /**
        * The width of the image.
        *
-       * @default faker.number.int({ min: 1, max: 3999 })
+       * @default int(fakerCore, { min: 1, max: 3999 })
        */
       width?: number;
       /**
        * The height of the image.
        *
-       * @default faker.number.int({ min: 1, max: 3999 })
+       * @default int(fakerCore, { min: 1, max: 3999 })
        */
       height?: number;
     } = {}
   ): string {
-    const {
-      width = this.faker.number.int({ min: 1, max: 3999 }),
-      height = this.faker.number.int({ min: 1, max: 3999 }),
-    } = options;
-
-    const urlMethod = this.faker.helpers.arrayElement([
-      ({ width, height }: { width?: number; height?: number }) =>
-        this.urlPicsumPhotos({ width, height, grayscale: false, blur: 0 }),
-      // Other providers may be added back here in future versions.
-    ]);
-
-    return urlMethod({ width, height });
+    return imageUrl(fakerToCore(this.faker), options);
   }
 
   /**
@@ -168,13 +147,13 @@ export class ImageModule extends ModuleBase {
       /**
        * The width of the image.
        *
-       * @default faker.number.int({ min: 1, max: 3999 })
+       * @default int(fakerCore, { min: 1, max: 3999 })
        */
       width?: number;
       /**
        * The height of the image.
        *
-       * @default faker.number.int({ min: 1, max: 3999 })
+       * @default int(fakerCore, { min: 1, max: 3999 })
        */
       height?: number;
       /**
@@ -183,22 +162,8 @@ export class ImageModule extends ModuleBase {
       category?: string;
     } = {}
   ): string {
-    deprecated({
-      deprecated: 'faker.image.urlLoremFlickr()',
-      proposed: 'faker.image.url()',
-      since: '10.1.0',
-      until: '11.0.0',
-    });
-
-    const {
-      width = this.faker.number.int({ min: 1, max: 3999 }),
-      height = this.faker.number.int({ min: 1, max: 3999 }),
-      category,
-    } = options;
-
-    return `https://loremflickr.com/${width}/${height}${
-      category == null ? '' : `/${category}`
-    }?lock=${this.faker.number.int()}`;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Internal call
+    return imageUrlLoremFlickr(fakerToCore(this.faker), options);
   }
 
   /**
@@ -227,59 +192,30 @@ export class ImageModule extends ModuleBase {
       /**
        * The width of the image.
        *
-       * @default faker.number.int({ min: 1, max: 3999 })
+       * @default int(fakerCore, { min: 1, max: 3999 })
        */
       width?: number;
       /**
        * The height of the image.
        *
-       * @default faker.number.int({ min: 1, max: 3999 })
+       * @default int(fakerCore, { min: 1, max: 3999 })
        */
       height?: number;
       /**
        * Whether the image should be grayscale.
        *
-       * @default faker.datatype.boolean()
+       * @default boolean(fakerCore)
        */
       grayscale?: boolean;
       /**
        * Whether the image should be blurred. `0` disables the blur.
        *
-       * @default faker.number.int({ max: 10 })
+       * @default int(fakerCore, { max: 10 })
        */
       blur?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
     } = {}
   ): string {
-    const {
-      width = this.faker.number.int({ min: 1, max: 3999 }),
-      height = this.faker.number.int({ min: 1, max: 3999 }),
-      grayscale = this.faker.datatype.boolean(),
-      blur = this.faker.number.int({ max: 10 }),
-    } = options;
-
-    let url = `https://picsum.photos/seed/${this.faker.string.alphanumeric({
-      length: { min: 5, max: 10 },
-    })}/${width}/${height}`;
-
-    const hasValidBlur = typeof blur === 'number' && blur >= 1 && blur <= 10;
-
-    if (grayscale || hasValidBlur) {
-      url += '?';
-
-      if (grayscale) {
-        url += `grayscale`;
-      }
-
-      if (grayscale && hasValidBlur) {
-        url += '&';
-      }
-
-      if (hasValidBlur) {
-        url += `blur=${blur}`;
-      }
-    }
-
-    return url;
+    return imageUrlPicsumPhotos(fakerToCore(this.faker), options);
   }
 
   /**
@@ -302,45 +238,30 @@ export class ImageModule extends ModuleBase {
       /**
        * The width of the image.
        *
-       * @default faker.number.int({ min: 1, max: 3999 })
+       * @default int(fakerCore, { min: 1, max: 3999 })
        */
       width?: number;
       /**
        * The height of the image.
        *
-       * @default faker.number.int({ min: 1, max: 3999 })
+       * @default int(fakerCore, { min: 1, max: 3999 })
        */
       height?: number;
       /**
        * The color of the image. Must be a color supported by svg.
        *
-       * @default faker.color.rgb()
+       * @default rgb(fakerCore)
        */
       color?: string;
       /**
        * The type of the image to return. Consisting of
        * the file extension and the used encoding.
        *
-       * @default faker.helpers.arrayElement(['svg-uri', 'svg-base64'])
+       * @default arrayElement(fakerCore, ['svg-uri', 'svg-base64'])
        */
       type?: 'svg-uri' | 'svg-base64';
     } = {}
   ): string {
-    const {
-      width = this.faker.number.int({ min: 1, max: 3999 }),
-      height = this.faker.number.int({ min: 1, max: 3999 }),
-      color = this.faker.color.rgb(),
-      type = this.faker.helpers.arrayElement(['svg-uri', 'svg-base64']),
-    } = options;
-
-    const svgString = `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" baseProfile="full" width="${width}" height="${height}"><rect width="100%" height="100%" fill="${color}"/><text x="${
-      width / 2
-    }" y="${
-      height / 2
-    }" font-size="20" alignment-baseline="middle" text-anchor="middle" fill="white">${width}x${height}</text></svg>`;
-
-    return type === 'svg-uri'
-      ? `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svgString)}`
-      : `data:image/svg+xml;base64,${toBase64(svgString)}`;
+    return imageDataUri(fakerToCore(this.faker), options);
   }
 }

@@ -6,8 +6,6 @@ exports[`location > 42 > cardinalDirection > noArgs 1`] = `"East"`;
 
 exports[`location > 42 > cardinalDirection > with abbreviated option 1`] = `"E"`;
 
-exports[`location > 42 > city 1`] = `"Fort Camryn"`;
-
 exports[`location > 42 > continent 1`] = `"Asia"`;
 
 exports[`location > 42 > country 1`] = `"Guinea"`;
@@ -129,14 +127,6 @@ exports[`location > 42 > secondaryAddress 1`] = `"Apt. 975"`;
 exports[`location > 42 > state > noArgs 1`] = `"Maine"`;
 
 exports[`location > 42 > state > with options 1`] = `"ME"`;
-
-exports[`location > 42 > street 1`] = `"Miller Crest"`;
-
-exports[`location > 42 > streetAddress > noArgs 1`] = `"9751 Laury Rapid"`;
-
-exports[`location > 42 > streetAddress > with boolean 1`] = `"9751 Laury Rapid"`;
-
-exports[`location > 42 > streetAddress > with useFullAddress options 1`] = `"9751 Laury Rapid Apt. 982"`;
 
 exports[`location > 42 > timeZone 1`] = `"America/North_Dakota/Center"`;
 
@@ -278,12 +268,6 @@ exports[`location > 1211 > state > with options 1`] = `"WA"`;
 
 exports[`location > 1211 > street 1`] = `"W Chestnut Street"`;
 
-exports[`location > 1211 > streetAddress > noArgs 1`] = `"929 S Broad Street"`;
-
-exports[`location > 1211 > streetAddress > with boolean 1`] = `"929 S Broad Street"`;
-
-exports[`location > 1211 > streetAddress > with useFullAddress options 1`] = `"929 S Broad Street Suite 468"`;
-
 exports[`location > 1211 > timeZone 1`] = `"Pacific/Fiji"`;
 
 exports[`location > 1211 > zipCode > noArgs 1`] = `"82966-7368"`;
@@ -297,8 +281,6 @@ exports[`location > 1337 > buildingNumber 1`] = `"22435"`;
 exports[`location > 1337 > cardinalDirection > noArgs 1`] = `"East"`;
 
 exports[`location > 1337 > cardinalDirection > with abbreviated option 1`] = `"E"`;
-
-exports[`location > 1337 > city 1`] = `"East Faye"`;
 
 exports[`location > 1337 > continent 1`] = `"Antarctica"`;
 
@@ -421,14 +403,6 @@ exports[`location > 1337 > secondaryAddress 1`] = `"Apt. 224"`;
 exports[`location > 1337 > state > noArgs 1`] = `"Indiana"`;
 
 exports[`location > 1337 > state > with options 1`] = `"IN"`;
-
-exports[`location > 1337 > street 1`] = `"Josephine Gateway"`;
-
-exports[`location > 1337 > streetAddress > noArgs 1`] = `"22435 Bernardo Hills"`;
-
-exports[`location > 1337 > streetAddress > with boolean 1`] = `"22435 Bernardo Hills"`;
-
-exports[`location > 1337 > streetAddress > with useFullAddress options 1`] = `"22435 Bernardo Hills Suite 294"`;
 
 exports[`location > 1337 > timeZone 1`] = `"America/Guadeloupe"`;
 

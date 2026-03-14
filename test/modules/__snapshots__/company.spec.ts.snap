@@ -16,8 +16,6 @@ exports[`company > 42 > catchPhraseDescriptor 1`] = `"fault-tolerant"`;
 
 exports[`company > 42 > catchPhraseNoun 1`] = `"frame"`;
 
-exports[`company > 42 > name 1`] = `"Miller Group"`;
-
 exports[`company > 1211 > buzzAdjective 1`] = `"vertical"`;
 
 exports[`company > 1211 > buzzNoun 1`] = `"technologies"`;
@@ -34,8 +32,6 @@ exports[`company > 1211 > catchPhraseDescriptor 1`] = `"user-facing"`;
 
 exports[`company > 1211 > catchPhraseNoun 1`] = `"system engine"`;
 
-exports[`company > 1211 > name 1`] = `"Zieme, Runolfsdottir and Schulist"`;
-
 exports[`company > 1337 > buzzAdjective 1`] = `"efficient"`;
 
 exports[`company > 1337 > buzzNoun 1`] = `"deliverables"`;
@@ -51,5 +47,3 @@ exports[`company > 1337 > catchPhraseAdjective 1`] = `"Extended"`;
 exports[`company > 1337 > catchPhraseDescriptor 1`] = `"directional"`;
 
 exports[`company > 1337 > catchPhraseNoun 1`] = `"customer loyalty"`;
-
-exports[`company > 1337 > name 1`] = `"Koelpin - Gibson"`;
